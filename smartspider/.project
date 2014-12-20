@@ -3,6 +3,7 @@
 	<name>smartspider</name>
 	<comment></comment>
 	<projects>
+		<project>spin</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
