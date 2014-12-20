@@ -17,4 +17,12 @@ BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Ge
 z=BR.open("https://www.linkedin.com/in/frankdgreco")
 y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
 parsed = BeautifulSoup(y.read())
-print parsed.text
+summary = parsed.find("div", {"class" : "profile-overview-content"},recursive=True)
+region = summary.find("span", {"class" : "locality"}).getString()
+title = summary.find("p", {"class" : "title"}).getString()
+industry = summary.find("dd" , {"class" : "industry"}).getString()
+current = [x.getString() for x in summary.find("tr" , {"id" : "overview-summary-current"}).findChildren()[2:] if x.getString()]
+previous = [x.getString() for x in summary.find("tr" , {"id" : "overview-summary-past"}).findChildren()[2:] if x.getString()]
+education = [x.getString() for x in summary.find("tr" , {"id" : "overview-summary-education"}).findChildren()[2:] if x.getString()]
+jobsummary = parsed.find("p" , {"class" : "description"}).text
+skills = [x.text for x in parsed.findAll("span" , {"class" : "endorse-item-name-text"})]
