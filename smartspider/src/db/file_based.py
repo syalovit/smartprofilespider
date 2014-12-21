@@ -22,7 +22,7 @@ def readSeedIndex(source):
     f = open("c:\\users\\eloise\\"+source+"_index","r")
     data = []
     for line in f.readlines(): 
-        data = data + json.loads(line)
+        data.append(json.loads(line))
     f.close()
     return data
     return data

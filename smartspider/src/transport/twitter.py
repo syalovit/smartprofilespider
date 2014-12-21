@@ -17,7 +17,13 @@ BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Ge
 ('Connection', 'keep-alive')]
 
 def process_search_result(aResult):
-    pass
+    resultEntries = aResult.findAll("div", {"class" : "account  js-actionable-user js-profile-popup-actionable " })
+    meta_links = []
+    for entry in resultEntries:
+        fullName = entry.find("strong", {"class" : "fullname js-action-profile-name"}).getString()
+        userName = entry.find("span", {"class" : "username js-action-profile-name" }).getString()
+        meta_links.append([fullName,userName])
+    return meta_links
 
 def constructSearchUrl(listOfNames):
     return "%20OR%20".join(listOfNames)
@@ -27,12 +33,13 @@ def harvest_profiles_from_twitter_search(namedEntityRecords,maxBatchSize=20):
     allProfiles = []
     for a_batch in range(0,sizeOfRequest):
         url = "https://twitter.com/search?q=from%3A"+ \
-        namedEntityRecords[a_batch:(a_batch+1)*maxBatchSize]+\
+        constructSearchUrl(namedEntityRecords[a_batch:(a_batch+1)*maxBatchSize])+\
         "&src=typd&mode=users"
         z=BR.open(url)
         y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
         parsed = BeautifulSoup(y.read())
         allProfiles = allProfiles + process_search_result(parsed)
+    return allProfiles
 
 def main():
     idx = readSeedIndex("linkedin")
