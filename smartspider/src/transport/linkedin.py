@@ -5,7 +5,7 @@ Created on Dec 19, 2014
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
 from analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
-from db.file_based import storeCluster
+from db.file_based import storeCluster,updateSeedIndex
 import mechanize
 import gzip
 import StringIO
@@ -44,6 +44,7 @@ def process_linkedin_profile(a_link):
                               industry=industry,current=current,previous=previous,
                               education=education,jobsummary=jobsummary,interests=interests,
                               firstName=firstName,lastName=lastName))
+    updateSeedIndex(LINKEDIN,dict(firstName=firstName,lastName=lastName))
 
 def harvest_profiles_from_bing(constraint_based="new+york+city+tech+java",max_links=5000):
     z=BR.open("http://www.bing.com/search?q=site:https://www.linkedin.com/in+"+constraint_based+"&qs=n&form=QBRE")
@@ -64,11 +65,12 @@ def harvest_profiles_from_bing(constraint_based="new+york+city+tech+java",max_li
     
 
 def main():
-    links = harvest_profiles_from_bing(max_links=20)
+    links = harvest_profiles_from_bing(max_links=5)
     for link in links:
         try:
             process_linkedin_profile(link)
-        except:
+        except Exception as ex:
+            print ex
             pass
      
 main()
