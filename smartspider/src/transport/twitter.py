@@ -15,6 +15,8 @@ BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Ge
 ('Cache-Control', 'max-age=0'),
 ('Connection', 'keep-alive')]
 z=BR.open("https://twitter.com/frankgreco")
+
+'''https://twitter.com/search?q=from%3Agreco&src=typd&mode=users'''
 y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
 parsed = BeautifulSoup(y.read())
 profilesummary = parsed.find("p", {"class" : "ProfileHeaderCard-bio u-dir"},recursive=True).getString()

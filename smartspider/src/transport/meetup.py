@@ -13,6 +13,7 @@ from BeautifulSoup import BeautifulSoup,NavigableString
 import mechanize
 import gzip
 import StringIO
+import re
 BR = mechanize.Browser()
 BR.set_handle_robots(False)
 BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0'),
@@ -54,6 +55,17 @@ def process_location(x):
     return x[0].split(',')[0],x[2],x[3],x[4]
 ele = [x.text for x in region.findAll()]
 location = process_location(ele)
+interests = [x.text for x in parsed.findAll("a" , {"class" : re.compile("topic-id-")})]
+group_raw=parsed.findAll("li" , {"class" : re.compile("groupinfo-widget")})
+group_details = []
+def extract_group_details(x):
+    return x.find("div" , {"class" : "D_name" }), x.find("div" , {"class" : "member-role" })
+
+for x in group_raw:
+    grp_name,member_role = extract_group_details(x)
+    if grp_name is not None and member_role is not None:
+        group_details.append([grp_name.text,member_role.text])
+
 
        
 
