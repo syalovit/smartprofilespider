@@ -22,6 +22,50 @@ BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Ge
 ('Accept-Language', 'en-US,en;q=0.5'),
 ('Cache-Control', 'max-age=0'),
 ('Connection', 'keep-alive')]
+
+def fuzzyMatchName(fullName,aNER):
+    return fullName.upper().replace(" ","") in aNER
+
+def process_search_result(aResult,NER):
+    resultEntries = aResult.findAll("div", {"class" : "account  js-actionable-user js-profile-popup-actionable " })
+    meta_links = []
+    for entry in resultEntries:
+        fullName = entry.find("strong", {"class" : "fullname js-action-profile-name"}).getString()
+        userName = entry.find("span", {"class" : "username js-action-profile-name" }).getString()
+        try:
+            if fuzzyMatchName(fullName,NER):
+                meta_links.append(dict(fullName=fullName,userName=userName))
+        except Exception as ex:
+            print ex
+    return meta_links
+
+def constructSearchUrl(NER):
+    return "%20OR%20".join([(x["firstName"]+" "+x["lastName"]).replace(" ","+") for x in NER])
+
+def create_profiles_idx_from_twitter_search(namedEntityRecords,maxBatchSize=1):
+    sizeOfRequest = len(namedEntityRecords)
+    nerKeyList = [x['firstName'].upper().strip()+x['lastName'].upper().replace(" ","") for x in namedEntityRecords]
+    allProfiles = []
+    for a_batch in range(0,sizeOfRequest):
+        try:
+            sub_range = namedEntityRecords[a_batch:(a_batch+1)*maxBatchSize]
+            url = "https://twitter.com/search?q=from%3A"+ \
+            constructSearchUrl(sub_range)+\
+            "&src=typd&mode=users"
+            z=BR.open(url)
+            y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
+            parsed = BeautifulSoup(y.read())
+            matches = process_search_result(parsed,nerKeyList[a_batch:(a_batch+1)*maxBatchSize])
+            if matches:
+                updateSeedIndex("twitter_in",matches)
+        except Exception as e:
+            print url
+            print e
+
+
+
+
+
 name = 'frank greco'
 z=BR.open("http://www.bing.com/search?q=meetup+member+frank+greco&qs=n&form=QBRE&pq=meetup+member+frank+greco")
 y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
@@ -66,7 +110,13 @@ for x in group_raw:
     if grp_name is not None and member_role is not None:
         group_details.append([grp_name.text,member_role.text])
 
-
+def main():
+    NER = readSeedIndex("linkedin")
+    create_profiles_idx_from_meetup_search(NER)
+    entities = readSeedIndex("twitter_in")
+    for aBucket in entities:
+        process_twitter_profile(aBucket)
+main()
        
 
 

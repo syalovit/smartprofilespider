@@ -5,9 +5,11 @@ Created on Dec 19, 2014
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
 import mechanize
-from db.file_based import readSeedIndex
+from db.file_based import readSeedIndex,updateSeedIndex,storeCluster
+from analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
 import gzip
 import StringIO
+TWITTER = "twitter"
 BR = mechanize.Browser()
 BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0'),
 ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
@@ -16,41 +18,68 @@ BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Ge
 ('Cache-Control', 'max-age=0'),
 ('Connection', 'keep-alive')]
 
-def process_search_result(aResult):
+def fuzzyMatchName(fullName,aNER):
+    return fullName.upper().replace(" ","") in aNER
+
+def process_search_result(aResult,NER):
     resultEntries = aResult.findAll("div", {"class" : "account  js-actionable-user js-profile-popup-actionable " })
     meta_links = []
     for entry in resultEntries:
         fullName = entry.find("strong", {"class" : "fullname js-action-profile-name"}).getString()
         userName = entry.find("span", {"class" : "username js-action-profile-name" }).getString()
-        meta_links.append([fullName,userName])
+        try:
+            if fuzzyMatchName(fullName,NER):
+                meta_links.append(dict(fullName=fullName,userName=userName))
+        except Exception as ex:
+            print ex
     return meta_links
 
-def constructSearchUrl(listOfNames):
-    return "%20OR%20".join(listOfNames)
+def constructSearchUrl(NER):
+    return "%20OR%20".join([(x["firstName"]+" "+x["lastName"]).replace(" ","+") for x in NER])
 
-def harvest_profiles_from_twitter_search(namedEntityRecords,maxBatchSize=20):
+def create_profiles_idx_from_twitter_search(namedEntityRecords,maxBatchSize=1):
     sizeOfRequest = len(namedEntityRecords)
+    nerKeyList = [x['firstName'].upper().strip()+x['lastName'].upper().replace(" ","") for x in namedEntityRecords]
     allProfiles = []
     for a_batch in range(0,sizeOfRequest):
-        url = "https://twitter.com/search?q=from%3A"+ \
-        constructSearchUrl(namedEntityRecords[a_batch:(a_batch+1)*maxBatchSize])+\
-        "&src=typd&mode=users"
-        z=BR.open(url)
+        try:
+            sub_range = namedEntityRecords[a_batch:(a_batch+1)*maxBatchSize]
+            url = "https://twitter.com/search?q=from%3A"+ \
+            constructSearchUrl(sub_range)+\
+            "&src=typd&mode=users"
+            z=BR.open(url)
+            y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
+            parsed = BeautifulSoup(y.read())
+            matches = process_search_result(parsed,nerKeyList[a_batch:(a_batch+1)*maxBatchSize])
+            if matches:
+                updateSeedIndex("twitter_in",matches)
+        except Exception as e:
+            print url
+            print e
+
+def process_twitter_profile(pBuckets):
+    for a_profile in pBuckets:
+        userName = a_profile['userName'][1:]
+        z=BR.open("https://twitter.com/"+userName)
         y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
         parsed = BeautifulSoup(y.read())
-        allProfiles = allProfiles + process_search_result(parsed)
-    return allProfiles
+        profilesummary = parsed.find("p", {"class" : "ProfileHeaderCard-bio u-dir"},recursive=True).getString()
+        region = parsed.find("span", {"class" : "ProfileHeaderCard-locationText u-dir" }).getString() or "NONE"
+        tweets = [x.getString() for x in parsed.findAll("p" ,{"class" : "ProfileTweet-text js-tweet-text u-dir"})]
+        ner = dict(userName=userName,profilesummary=profilesummary,
+                                    region=region,tweets=tweets,lastName=a_profile["fullName"].split(' ')[-1],firstName=" ".join(a_profile["fullName"].split(' ')[:-1]))
+        cluster = computeNamedEntityClusterAlgo1(TWITTER,ner)
+        try:
+            storeCluster(TWITTER,cluster,ner)
+        except Exception as ex:
+            print cluster
+            print ner
+            print ex
 
 def main():
-    idx = readSeedIndex("linkedin")
-    NER = [x['lastName'] for x in idx]
-    print harvest_profiles_from_twitter_search(NER)
-#z=BR.open("https://twitter.com/frankgreco")
-#
-#'''https://twitter.com/search?q=from%3Agreco&src=typd&mode=users'''
-#y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
-#parsed = BeautifulSoup(y.read())
-#profilesummary = parsed.find("p", {"class" : "ProfileHeaderCard-bio u-dir"},recursive=True).getString()
-#region = parsed.find("span", {"class" : "ProfileHeaderCard-locationText u-dir" }).getString()
-#tweets = [x.getString() for x in parsed.findAll("p" ,{"class" : "ProfileTweet-text js-tweet-text u-dir"})]
+    NER = readSeedIndex("linkedin")
+    create_profiles_idx_from_twitter_search(NER)
+    entities = readSeedIndex("twitter_in")
+    for aBucket in entities:
+        process_twitter_profile(aBucket)
 main()

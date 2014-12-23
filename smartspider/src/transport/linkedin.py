@@ -28,22 +28,47 @@ def process_linkedin_profile(a_link):
     raw = y.read()
     parsed = BeautifulSoup(raw)
     summary = parsed.find("div", {"class" : "profile-overview-content"},recursive=True)
-    region = summary.find("span", {"class" : "locality"}).getString()
-    fullName = summary.find("span", {"class" : "full-name"}).getString()
+    try:
+        region = summary.find("span", {"class" : "locality"}).getString()
+    except:
+        region = None
+    try:
+        fullName = summary.find("span", {"class" : "full-name"}).getString()
+    except:
+        fullName = None
     lastName = fullName.split(' ')[-1]
     firstName = " ".join(fullName.split(' ')[:-1])
-    title = summary.find("p", {"class" : "title"}).getString()
-    industry = summary.find("dd" , {"class" : "industry"}).getString()
-    current = [x.getString() for x in summary.find("tr" , {"id" : "overview-summary-current"}).findChildren()[2:] if x.getString()]
-    previous = [x.getString() for x in summary.find("tr" , {"id" : "overview-summary-past"}).findChildren()[2:] if x.getString()]
-    education = [x.getString() for x in summary.find("tr" , {"id" : "overview-summary-education"}).findChildren()[2:] if x.getString()]
-    jobsummary = parsed.find("p" , {"class" : "description"}).text
+    try:
+        title = summary.find("p", {"class" : "title"}).getString()
+    except:
+        title = None
+    try:
+        industry = summary.find("dd" , {"class" : "industry"}).getString()
+    except:
+        industry = None
+    try:
+        current = [x.getString() for x in summary.find("tr" , {"id" : "overview-summary-current"}).findChildren()[2:] if x.getString()]
+    except:
+        current = None
+    try:
+        previous = [x.getString() for x in summary.find("tr" , {"id" : "overview-summary-past"}).findChildren()[2:] if x.getString()]
+    except:
+        previous = None
+    try:
+        education = [x.getString() for x in summary.find("tr" , {"id" : "overview-summary-education"}).findChildren()[2:] if x.getString()]
+    except:
+        education = None
+    try:
+        profilesummary = parsed.find("p" , {"class" : "description"}).text
+    except:
+        profilesummary = None
     interests = [x.text for x in parsed.findAll("span" , {"class" : "endorse-item-name-text"})]
-    cluster = computeNamedEntityClusterAlgo1(LINKEDIN,lastName, firstName)    
-    storeCluster(LINKEDIN,cluster,dict(raw=raw,link=a_link,region=region,title=title,
+    ner = dict(raw=raw,link=a_link,region=region,title=title,
                               industry=industry,current=current,previous=previous,
-                              education=education,jobsummary=jobsummary,interests=interests,
-                              firstName=firstName,lastName=lastName))
+                              education=education,profilesummary=profilesummary,interests=interests,
+                              firstName=firstName,lastName=lastName)
+    cluster = computeNamedEntityClusterAlgo1(LINKEDIN,ner)    
+    storeCluster(LINKEDIN,cluster,ner)
     updateSeedIndex(LINKEDIN,dict(firstName=firstName,lastName=lastName))
 
 def harvest_profiles_from_bing(constraint_based="new+york+city+tech+java",max_links=5000):
@@ -65,7 +90,7 @@ def harvest_profiles_from_bing(constraint_based="new+york+city+tech+java",max_li
     
 
 def main():
-    links = harvest_profiles_from_bing(max_links=5)
+    links = harvest_profiles_from_bing(max_links=10)
     for link in links:
         try:
             process_linkedin_profile(link)
