@@ -7,7 +7,8 @@ Created on Dec 21, 2014
 from metaphone import doublemetaphone
 from collections import Counter
 def normalizeRegion(source,region):
-    return region.upper().replace("GREATER","").replace("CITY","").replace(" ","")[:4]
+    firstPass = region.upper().replace("GREATER","").replace("CITY","").replace(" ","")[:4]
+    return "NEWYORK" if region.upper().find("NY") >=0 or region.upper().find("NEW YORK") >= 0 or region.upper().find("NEWYORK") >= 0 else firstPass
     
 
 def normalizeSummary(source,ner):

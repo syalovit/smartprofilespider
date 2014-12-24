@@ -77,8 +77,8 @@ def process_twitter_profile(pBuckets):
             print ex
 
 def main():
-    NER = readSeedIndex("linkedin")
-    create_profiles_idx_from_twitter_search(NER)
+#    NER = readSeedIndex("linkedin")
+#    create_profiles_idx_from_twitter_search(NER)
     entities = readSeedIndex("twitter_in")
     for aBucket in entities:
         process_twitter_profile(aBucket)

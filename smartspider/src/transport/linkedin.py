@@ -90,7 +90,7 @@ def harvest_profiles_from_bing(constraint_based="new+york+city+tech+java",max_li
     
 
 def main():
-    links = harvest_profiles_from_bing(max_links=10)
+    links = harvest_profiles_from_bing(max_links=5000)
     for link in links:
         try:
             process_linkedin_profile(link)
@@ -99,3 +99,7 @@ def main():
             pass
      
 main()
+from transport.twitter import main as twitMain
+twitMain()
+from transport.meetup import main as meetMain
+meetMain()
