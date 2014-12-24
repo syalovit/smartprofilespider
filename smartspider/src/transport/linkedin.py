@@ -33,7 +33,7 @@ def process_linkedin_profile(a_link):
     except:
         region = None
     try:
-        fullName = summary.find("span", {"class" : "full-name"}).getString()
+        fullName = summary.find("span", {"class" : "full-name"}).getString().encode('ascii','ignore').decode('ascii')
     except:
         fullName = None
     lastName = fullName.split(' ')[-1]

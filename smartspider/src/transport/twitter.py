@@ -54,7 +54,7 @@ def create_profiles_idx_from_twitter_search(namedEntityRecords,maxBatchSize=1):
             if matches:
                 updateSeedIndex("twitter_in",matches)
         except Exception as e:
-            print url
+            print sub_range
             print e
 
 def process_twitter_profile(pBuckets):

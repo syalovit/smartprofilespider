@@ -19,7 +19,7 @@ from analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
 
 BR = mechanize.Browser()
 BR.set_handle_robots(False)
-BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0'),
+BR.addheaders = [('User-agent', 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0; MAARJS)'),
 ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
 ('Accept-Encoding' ,'gzip, deflate'),
 ('Accept-Language', 'en-US,en;q=0.5'),
@@ -44,7 +44,7 @@ def process_search_result(aResult,NER):
 
 def constructSearchUrl(NER):
 #    return "http://www.bing.com/search?q=meetup+member+"+(NER["firstName"]+" "+NER["lastName"]).replace(" ","+")+"&qs=n&form=QBRE&pq=meetup+member+"+(NER["firstName"]+" "+NER["lastName"]).replace(" ","+") 
-    return "http://www.bing.com/search?q=meetup+member+"+(NER["firstName"]+" "+NER["lastName"]).replace(" ","+") 
+    return "http://www.bing.com/search?q=meetup+members+"+(NER["firstName"]+" "+NER["lastName"]).replace(" ","+") 
 
 
 def create_profiles_idx_from_meetup_search(namedEntityRecord):
@@ -52,11 +52,13 @@ def create_profiles_idx_from_meetup_search(namedEntityRecord):
     def process_name(x):
         return x.text.split('-')[0]    
     def fuzzy_match(x,name):
-        return x.upper() == name.upper() or name.upper().find(x.upper().replace('.','')) >= 0
+        return x.upper() == name.upper() or name.upper().replace(' ','') == x.upper() or name.upper().find(x.upper().replace('.','')) >= 0
             
     try:
+        # TODO
+        # THERE IS AN ISSUE WITH BING NOT RETURNING THE FIRST RESULT FOR THIS INTERFACE
+        # IF A NER BELONGS TO ONLY ONE GROUP, OR IS NOT PUBLIC HE WILL BE MISSED IN THIS PROFILE SEARCH
         url = constructSearchUrl(namedEntityRecord)
-        print url
         z=BR.open(url)
         y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
         parsed = BeautifulSoup(y.read())
