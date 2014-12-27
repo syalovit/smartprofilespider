@@ -5,7 +5,7 @@ Created on Dec 19, 2014
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
 import mechanize
-from smartspider.db.file_based import readSeedIndex,updateSeedIndex,storeCluster
+from smartspider.db.mongo_based import readSeedIndex,updateSeedIndex,storeCluster
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
 import gzip
 import StringIO
@@ -58,6 +58,8 @@ def create_profiles_idx_from_twitter_search(namedEntityRecords,maxBatchSize=1):
             print e
 
 def process_twitter_profile(pBuckets):
+    if not isinstance(pBuckets,list):
+        pBuckets = [pBuckets]
     for a_profile in pBuckets:
         userName = a_profile['userName'][1:]
         z=BR.open("https://twitter.com/"+userName)
@@ -79,9 +81,8 @@ def process_twitter_profile(pBuckets):
             print ex
 
 def main():
-#    NER = readSeedIndex("linkedin")
-#    create_profiles_idx_from_twitter_search(NER)
+    NER = readSeedIndex("linkedin")
+    create_profiles_idx_from_twitter_search(NER)
     entities = readSeedIndex("twitter_in")
     for aBucket in entities:
         process_twitter_profile(aBucket)
-main()

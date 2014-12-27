@@ -14,7 +14,7 @@ import mechanize
 import gzip
 import StringIO
 import re
-from smartspider.db.file_based import readSeedIndex,updateSeedIndex,storeCluster
+from smartspider.db.mongo_based import readSeedIndex,updateSeedIndex,storeCluster
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
 
 BR = mechanize.Browser()
@@ -128,7 +128,6 @@ def main():
     for a_ner in NER:
         create_profiles_idx_from_meetup_search(a_ner)
 
-main()
        
 
 

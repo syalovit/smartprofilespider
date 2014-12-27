@@ -5,7 +5,7 @@ Created on Dec 19, 2014
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
-from smartspider.db.file_based import storeCluster,updateSeedIndex,readSeedIndex
+from smartspider.db.mongo_based import storeCluster,updateSeedIndex,readSeedIndex
 import mechanize
 import gzip
 import StringIO
@@ -70,7 +70,7 @@ def process_linkedin_profile(a_link):
                               firstName=firstName,lastName=lastName)
     cluster = computeNamedEntityClusterAlgo1(LINKEDIN,ner)    
     storeCluster(LINKEDIN,cluster,ner)
-    updateSeedIndex(LINKEDIN,dict(firstName=firstName,lastName=lastName))
+    updateSeedIndex(LINKEDIN,[dict(firstName=firstName,lastName=lastName)])
 
 def harvest_profiles_from_bing(constraint_based="new+york+city+tech+java",max_links=5000):
     z=BR.open("http://www.bing.com/search?q=site:https://www.linkedin.com/in+"+constraint_based+"&qs=n&form=QBRE")
@@ -89,9 +89,8 @@ def harvest_profiles_from_bing(constraint_based="new+york+city+tech+java",max_li
         updateSeedIndex(LINKEDIN_INPUT,links)    
     
 
-def main():
-#    harvest_profiles_from_bing(max_links=10000)
-    links = sum(readSeedIndex(LINKEDIN_INPUT),[])
+def main():    
+    links = readSeedIndex(LINKEDIN_INPUT)
     for link in links:
         try:
             process_linkedin_profile(link)
@@ -99,8 +98,3 @@ def main():
             print ex
             pass
      
-#main()
-from transport.twitter import main as twitMain
-twitMain()
-from transport.meetup import main as meetMain
-meetMain()
