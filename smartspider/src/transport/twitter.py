@@ -64,6 +64,8 @@ def process_twitter_profile(pBuckets):
         y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
         parsed = BeautifulSoup(y.read())
         profilesummary = parsed.find("p", {"class" : "ProfileHeaderCard-bio u-dir"},recursive=True).getString()
+        if profilesummary:
+            profilesummary = profilesummary.encode('ascii','ignore').decode('ascii')
         region = parsed.find("span", {"class" : "ProfileHeaderCard-locationText u-dir" }).getString() or "NONE"
         tweets = [x.getString() for x in parsed.findAll("p" ,{"class" : "ProfileTweet-text js-tweet-text u-dir"})]
         ner = dict(userName=userName,profilesummary=profilesummary,

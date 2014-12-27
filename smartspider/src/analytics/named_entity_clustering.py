@@ -8,7 +8,7 @@ from metaphone import doublemetaphone
 from collections import Counter
 def normalizeRegion(source,region):
     firstPass = region.upper().replace("GREATER","").replace("CITY","").replace(" ","")[:4]
-    return "NEWYORK" if region.upper().find("NY") >=0 or region.upper().find("NEW YORK") >= 0 or region.upper().find("NEWYORK") >= 0 else firstPass
+    return "NEWY" if region.upper().find("NY") >=0 or region.upper().find("NEW YORK") >= 0 or region.upper().find("NEWYORK") >= 0 else firstPass
     
 
 def normalizeSummary(source,ner):
@@ -19,6 +19,8 @@ def normalizeSummary(source,ner):
         profilesummary = ner['profilesummary']
     if profilesummary:
         elements = [x for x in sorted(profilesummary.split(" ")) if x.isalpha()]
+        print ner['firstName'],ner['lastName']
+        print profilesummary
         ele = ["".join(list(doublemetaphone(x))) for x in elements]
         hiScore = [x[0] for x in list(Counter(ele).most_common(10))]        
         return "_".join(hiScore)

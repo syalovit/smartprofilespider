@@ -5,10 +5,11 @@ Created on Dec 19, 2014
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
 from analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
-from db.file_based import storeCluster,updateSeedIndex
+from db.file_based import storeCluster,updateSeedIndex,readSeedIndex
 import mechanize
 import gzip
 import StringIO
+LINKEDIN_INPUT = "linkedin_input"
 LINKEDIN = "linkedin"
 BR = mechanize.Browser()
 BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0'),
@@ -79,18 +80,18 @@ def harvest_profiles_from_bing(constraint_based="new+york+city+tech+java",max_li
     linkedin_links = [x.find("a").get("href") for x in results]
     step = len(linkedin_links)
     for page_offset in range(1,max_links,step):
-        z=BR.open("http://www.bing.com/search?q=site:https://www.linkedin.com/in+new+york+city+tech+java&qs=n&form=QBRE&first="+str(page_offset))
+        url = "http://www.bing.com/search?q=site:https://www.linkedin.com/in+new+york+city+tech&qs=n&form=QBRE&first="+str(page_offset)
+        z=BR.open(url)
         y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
         parsed = BeautifulSoup(y.read())
         results = parsed.findAll("li", {"class" : "b_algo"})
         links = [x.find("a").get("href") for x in results]
-        linkedin_links = linkedin_links + links
-        
-    return linkedin_links    
+        updateSeedIndex(LINKEDIN_INPUT,links)    
     
 
 def main():
-    links = harvest_profiles_from_bing(max_links=5000)
+#    harvest_profiles_from_bing(max_links=10000)
+    links = sum(readSeedIndex(LINKEDIN_INPUT),[])
     for link in links:
         try:
             process_linkedin_profile(link)
@@ -98,7 +99,7 @@ def main():
             print ex
             pass
      
-main()
+#main()
 from transport.twitter import main as twitMain
 twitMain()
 from transport.meetup import main as meetMain
