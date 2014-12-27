@@ -16,6 +16,7 @@ import StringIO
 import re
 from smartspider.db.mongo_based import readSeedIndex,updateSeedIndex,storeCluster
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
+import logging
 
 BR = mechanize.Browser()
 BR.set_handle_robots(False)
@@ -74,7 +75,7 @@ def create_profiles_idx_from_meetup_search(namedEntityRecord):
         ##### ABOVE WE ACQUIRED MEETUP GROUPS #### NOW WE JUST USE ONE OF THE GROUPS TO TRAVERSE THE MEETUP GRAPH
         if meta_links:
             the_target_group = meta_links[0][1]
-            print the_target_group
+            logging.getLogger().log(logging.INFO,"Member Id Used: %s" % the_target_group)
             z=BR.open(the_target_group+"?showAllGroups=true#my-meetup-groups-list") 
             y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
             parsed = BeautifulSoup(y.read())
@@ -124,10 +125,12 @@ def create_profiles_idx_from_meetup_search(namedEntityRecord):
     
 
 def main():
-    NER = readSeedIndex("linkedin")
-    for a_ner in NER:
-        create_profiles_idx_from_meetup_search(a_ner)
-
+    while True:
+        import time
+        NER = readSeedIndex("linkedin")
+        for a_ner in NER:
+            create_profiles_idx_from_meetup_search(a_ner)
+        time.sleep(60)
        
 
 

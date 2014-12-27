@@ -9,6 +9,7 @@ from smartspider.db.mongo_based import storeCluster,updateSeedIndex,readSeedInde
 import mechanize
 import gzip
 import StringIO
+import logging
 LINKEDIN_INPUT = "linkedin_input"
 LINKEDIN = "linkedin"
 BR = mechanize.Browser()
@@ -23,7 +24,7 @@ BR.set_handle_robots(False)
 
 def process_linkedin_profile(a_link):
     # XXX DEAL WITH PARTIAL PROFILES
-    print a_link
+    logging.getLogger().log(logging.INFO,"processing link %s " % a_link)
     z=BR.open(a_link)
     y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
     raw = y.read()
@@ -72,29 +73,36 @@ def process_linkedin_profile(a_link):
     storeCluster(LINKEDIN,cluster,ner)
     updateSeedIndex(LINKEDIN,[dict(firstName=firstName,lastName=lastName)])
 
-def harvest_profiles_from_bing(constraint_based="new+york+city+tech+java",max_links=5000):
-    z=BR.open("http://www.bing.com/search?q=site:https://www.linkedin.com/in+"+constraint_based+"&qs=n&form=QBRE")
-    y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
-    parsed = BeautifulSoup(y.read())
-    results = parsed.findAll("li", {"class" : "b_algo"})
-    linkedin_links = [x.find("a").get("href") for x in results]
-    step = len(linkedin_links)
-    for page_offset in range(1,max_links,step):
-        url = "http://www.bing.com/search?q=site:https://www.linkedin.com/in+new+york+city+tech&qs=n&form=QBRE&first="+str(page_offset)
-        z=BR.open(url)
+def harvest_profiles_from_bing(constraint_based="'new+york+city'+and+'java'",max_links=5000):
+    import string
+    for s in string.letters:
+        z=BR.open("http://www.bing.com/search?q=site:https://www.linkedin.com/in+/in/"+s+"+"+constraint_based+"&qs=n&form=QBRE")
         y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
         parsed = BeautifulSoup(y.read())
         results = parsed.findAll("li", {"class" : "b_algo"})
-        links = [x.find("a").get("href") for x in results]
-        updateSeedIndex(LINKEDIN_INPUT,links)    
-    
+        linkedin_links = [x.find("a").get("href") for x in results]
+        step = len(linkedin_links)
+        for page_offset in range(1,max_links,step):
+            url = "http://www.bing.com/search?q=site:https://www.linkedin.com/in+new+york+city+tech&qs=n&form=QBRE&first="+str(page_offset)
+            try:
+                z=BR.open(url)
+                y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
+                parsed = BeautifulSoup(y.read())
+                results = parsed.findAll("li", {"class" : "b_algo"})
+                links = [x.find("a").get("href") for x in results]
+                updateSeedIndex(LINKEDIN_INPUT,links)    
+            except Exception as ex:
+                print ex
 
-def main():    
-    links = readSeedIndex(LINKEDIN_INPUT)
-    for link in links:
-        try:
-            process_linkedin_profile(link)
-        except Exception as ex:
-            print ex
-            pass
-     
+
+def main():
+    while True:
+        import time    
+        links = readSeedIndex(LINKEDIN_INPUT)
+        for link in links:
+            try:
+                process_linkedin_profile(link)
+            except Exception as ex:
+                print ex
+                pass
+        time.sleep(60)

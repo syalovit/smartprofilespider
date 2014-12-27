@@ -4,9 +4,11 @@ Created on Dec 26, 2014
 @author: Eloise
 '''
 
-from smartspider.transport.twitter import main as process_twitter
+from smartspider.transport.meetup import main as process_meetup
 
 def main():
-    process_twitter()
+    import logging
+    logging.getLogger().setLevel(logging.INFO)    
+    process_meetup()
     
 main()

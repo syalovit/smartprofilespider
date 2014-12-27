@@ -6,9 +6,8 @@ Created on Dec 26, 2014
 from smartspider.transport.linkedin import harvest_profiles_from_bing 
 
 def main():
-    harvest_profiles_from_bing(max_links=10000)
+    import logging
+    logging.getLogger().setLevel(logging.INFO)    
+    harvest_profiles_from_bing(max_links=1000000)
     
 main()
-import smartspider.jobs.process_linkedin
-import smartspider.jobs.process_twitter
-import smartspider.jobs.process_meetup

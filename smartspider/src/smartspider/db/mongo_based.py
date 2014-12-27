@@ -59,7 +59,10 @@ def retrieveCluster(source,cluster):
 
 def updateSeedIndex(source,namedEntity):
     db = MongoDBConnection.instance().get_connection().smartspider
-    dbColl = getattr(db,source)
+    if source not in db.collection_names():
+        dbColl = db.create_collection(source,size=8*1024*1024*100,capped=True)
+    else:
+        dbColl = getattr(db,source)    
     for n in namedEntity:    
         dbColl.update({"cluster" : n}, {"cluster" : n} , upsert = True)
     
@@ -67,7 +70,7 @@ def updateSeedIndex(source,namedEntity):
 def readSeedIndex(source):
     db = MongoDBConnection.instance().get_connection().smartspider
     dbColl = getattr(db,source)    
-    return [x['cluster'] for x in dbColl.find(fields=["cluster"])]
+    return [x['cluster'] for x in dbColl.find(fields=["cluster"],tailable=True,await_data=True)]
     
 def read_basic_cluster():
     db = MongoDBConnection.instance().get_connection().smartspider
