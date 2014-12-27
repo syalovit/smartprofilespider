@@ -1,4 +1,4 @@
-from db.file_based import  read_basic_cluster,read_cluster_skills_algo1
+from smartspider.db.file_based import  read_basic_cluster,read_cluster_skills_algo1
 
 def main():
     import pprint

@@ -4,8 +4,8 @@ Created on Dec 19, 2014
 @author: Eloise
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
-from analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
-from db.file_based import storeCluster,updateSeedIndex,readSeedIndex
+from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
+from smartspider.db.file_based import storeCluster,updateSeedIndex,readSeedIndex
 import mechanize
 import gzip
 import StringIO

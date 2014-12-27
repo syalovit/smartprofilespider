@@ -5,8 +5,8 @@ Created on Dec 19, 2014
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
 import mechanize
-from db.file_based import readSeedIndex,updateSeedIndex,storeCluster
-from analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
+from smartspider.db.file_based import readSeedIndex,updateSeedIndex,storeCluster
+from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
 import gzip
 import StringIO
 TWITTER = "twitter"

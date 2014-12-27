@@ -14,8 +14,8 @@ import mechanize
 import gzip
 import StringIO
 import re
-from db.file_based import readSeedIndex,updateSeedIndex,storeCluster
-from analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
+from smartspider.db.file_based import readSeedIndex,updateSeedIndex,storeCluster
+from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
 
 BR = mechanize.Browser()
 BR.set_handle_robots(False)
