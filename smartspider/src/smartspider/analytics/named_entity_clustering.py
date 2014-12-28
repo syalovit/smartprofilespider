@@ -4,7 +4,6 @@ Created on Dec 21, 2014
 @author: Eloise
 '''
 
-from metaphone import doublemetaphone
 from collections import Counter
 
 
