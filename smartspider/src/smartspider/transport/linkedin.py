@@ -100,8 +100,8 @@ def harvest_profiles_from_bing(constraint_based="'new+york+city'+and+'java'",max
                 [logging.log(logging.INFO,links_ele) for links_ele in links_raw]
                 links_formatted = [x for x in links_raw if x.find("https://")>=0]
                 repeating = prev_links == links_formatted
-		if repeating:
-		    break:
+                if repeating:
+                    break
                 prev_links = links_formatted
                 updateSeedIndex(LINKEDIN_INPUT,links_formatted)    
             except Exception as ex:
