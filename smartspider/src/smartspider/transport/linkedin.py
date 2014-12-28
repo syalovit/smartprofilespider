@@ -76,24 +76,36 @@ def process_linkedin_profile(a_link):
 def harvest_profiles_from_bing(constraint_based="'new+york+city'+and+'java'",max_links=5000):
     import string
     for s in string.letters:
-        z=BR.open("http://www.bing.com/search?q=site:https://www.linkedin.com/in+/in/"+s+"+"+constraint_based+"&qs=n&form=QBRE")
+        logging.getLogger().log(logging.INFO,"Seeding letter %s" %s)
+        #url = "http://www.bing.com/search?q=site:https://www.linkedin.com/in+'/in/"+s+"'+"+constraint_based+"&qs=n&form=QBRE"
+        a_url = "http://www.bing.com/search?q=site%3Ahttps%3A%2F%2Fwww.linkedin.com%2Fin+%27%2Fin%2F"+s+"%27+%27new+york+city%27+and+%27java%27&go=Submit&qs=bs&form=QBRE"
+        logging.getLogger().log(logging.INFO,"url is %s" %a_url)
+        z=BR.open(a_url)
         y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
         parsed = BeautifulSoup(y.read())
         results = parsed.findAll("li", {"class" : "b_algo"})
         linkedin_links = [x.find("a").get("href") for x in results]
         step = len(linkedin_links)
-        for page_offset in range(1,max_links,step):
-            url = "http://www.bing.com/search?q=site:https://www.linkedin.com/in+new+york+city+tech&qs=n&form=QBRE&first="+str(page_offset)
+        repeating = False
+        prev_links = None
+        for page_offset in range(1,max_links,step) and not repeating:
+            url =a_url+"&first="+str(page_offset)
             try:
                 z=BR.open(url)
+                logging.getLogger().log(logging.INFO,"url is %s" %url)
                 y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
                 parsed = BeautifulSoup(y.read())
                 results = parsed.findAll("li", {"class" : "b_algo"})
-                links = [x.find("a").get("href") for x in results]
-                updateSeedIndex(LINKEDIN_INPUT,links)    
+                links_raw = [x.find("a").get("href") for x in results]
+                [logging.log(logging.INFO,links_ele) for links_ele in links_raw]
+                links_formatted = [x for x in links_raw if x.find("https://")>=0]
+                repeating = prev_links == links_formatted
+                prev_links = links_formatted
+                updateSeedIndex(LINKEDIN_INPUT,links_formatted)    
             except Exception as ex:
-                print ex
-
+                logging.getLogger().log(logging.CRITICAL,ex)
+                logging.getLogger().log(logging.CRITICAL,url)
+                
 
 def main():
     while True:
@@ -105,4 +117,3 @@ def main():
             except Exception as ex:
                 print ex
                 pass
-        time.sleep(60)

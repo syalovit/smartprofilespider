@@ -130,7 +130,7 @@ def main():
         NER = readSeedIndex("linkedin")
         for a_ner in NER:
             create_profiles_idx_from_meetup_search(a_ner)
-        time.sleep(60)
+        
        
 
 

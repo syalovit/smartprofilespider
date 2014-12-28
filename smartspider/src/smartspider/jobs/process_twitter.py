@@ -5,10 +5,9 @@ Created on Dec 26, 2014
 '''
 
 from smartspider.transport.twitter import main as process_twitter
-
+from smartspider.util import set_logging_level_debug
 def main():
-    import logging
-    logging.getLogger().setLevel(logging.INFO)
+    set_logging_level_debug()
     process_twitter()
     
 main()
