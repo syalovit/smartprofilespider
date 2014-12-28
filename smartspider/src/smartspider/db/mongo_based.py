@@ -11,7 +11,7 @@ import numpy as np
 
 from pymongo import Connection
 from pymongo.database import Database
-import spin
+
 DBNAME = "localhost"
 USERNAME = "talneuro"
 PASSWD = "talneuro"
