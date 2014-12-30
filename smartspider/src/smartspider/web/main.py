@@ -55,7 +55,7 @@ class MainHandler(BaseHandler):
 
 
 class RetrieveHandler(BaseHandler):    
-    def get(self):
+    def get(self):  
         from smartspider.db.mongo_based import retrieveCluster
         link = self.get_argument("link")
         namedEntityReco = retrieveCluster("NONE",link)

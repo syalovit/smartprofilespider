@@ -78,7 +78,8 @@ def create_profiles_idx_from_meetup_search(namedEntityRecord):
             logging.getLogger().log(logging.INFO,"Member Id Used: %s" % the_target_group)
             z=BR.open(the_target_group+"?showAllGroups=true#my-meetup-groups-list") 
             y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
-            parsed = BeautifulSoup(y.read())
+            raw = y.read()
+            parsed = BeautifulSoup(raw)
             region=parsed.find("p" , {"itemprop":"address"})
             userName=parsed.find("div" , { "id" : re.compile("member_") })
             if userName:
@@ -101,7 +102,7 @@ def create_profiles_idx_from_meetup_search(namedEntityRecord):
                 if grp_name is not None and member_role is not None:
                     group_details.append([grp_name.text,member_role.text])
     
-            ner = dict(userName=userName,profilesummary=interests,
+            ner = dict(userName=userName,raw=raw,profilesummary=interests,
                                         region=" ".join(list(location)),groups=group_details,lastName=namedEntityRecord['lastName'],firstName=namedEntityRecord['firstName'])
             cluster = computeNamedEntityClusterAlgo1(MEETUP,ner)
             try:

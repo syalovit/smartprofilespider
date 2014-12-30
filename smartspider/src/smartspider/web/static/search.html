@@ -20,10 +20,8 @@
   <tr>
     <td><b>{{ meta_name }}</b></td>
     <td>
-    {% for a_link in meta_profs %}
-    <tr> 
-    <td><a href="retrieve?link={{ a_link }}">{{ a_link }}</a></td>
-    </tr>
+    {% for a_link in meta_profs %} 
+    <br><a href="retrieve?link={{ a_link }}">{{ a_link }}</a></br>
     {% end %}
     </td>
   </tr>

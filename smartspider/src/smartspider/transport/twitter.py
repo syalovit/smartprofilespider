@@ -64,13 +64,14 @@ def process_twitter_profile(pBuckets):
         userName = a_profile['userName'][1:]
         z=BR.open("https://twitter.com/"+userName)
         y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
-        parsed = BeautifulSoup(y.read())
+        raw = y.read()
+        parsed = BeautifulSoup(raw)
         profilesummary = parsed.find("p", {"class" : "ProfileHeaderCard-bio u-dir"},recursive=True).getString()
         if profilesummary:
             profilesummary = profilesummary.encode('ascii','ignore').decode('ascii')
         region = parsed.find("span", {"class" : "ProfileHeaderCard-locationText u-dir" }).getString() or "NONE"
         tweets = [x.getString() for x in parsed.findAll("p" ,{"class" : "ProfileTweet-text js-tweet-text u-dir"})]
-        ner = dict(userName=userName,profilesummary=profilesummary,
+        ner = dict(userName=userName,raw=raw,profilesummary=profilesummary,
                                     region=region,tweets=tweets,lastName=a_profile["fullName"].split(' ')[-1],firstName=" ".join(a_profile["fullName"].split(' ')[:-1]))
         cluster = computeNamedEntityClusterAlgo1(TWITTER,ner)
         try:
