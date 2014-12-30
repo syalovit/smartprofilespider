@@ -87,7 +87,8 @@ def create_basic_cluster_algo0():
             cluster_algo0.update({"meta_profile_key" : key } , {"meta_profile_key" : key , "features" : y.replace("_"," ") }, upsert = True)
             
         cluster_algo0.update({"meta_profile_key" : key } , {"$addToSet" : { "profiles" : y } }, upsert = True)
-        tags = tags + y.replace('.','').split("_")[3:-1]
+        new_tags = [x for x in y.replace('.','').split("_")[3:-1] if x!="NONE"]        
+        tags = tags + new_tags 
     counter = countText(tags)
     db.meta_features.update({"algo": "cluster_algo0"} , {"algo": "cluster_algo0", "features" : counter }, upsert=True)
     
