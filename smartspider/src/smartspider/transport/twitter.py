@@ -81,10 +81,13 @@ def process_twitter_profile(pBuckets):
             print ner
             print ex
 
-def main():
+def seed_twitter():
     while True:
         NER = readSeedIndex("linkedin")
         create_profiles_idx_from_twitter_search(NER)
+
+def process_twitter():
+    while True:
         entities = readSeedIndex("twitter_in")
         for aBucket in entities:
             process_twitter_profile(aBucket)
