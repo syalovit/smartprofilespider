@@ -10,6 +10,17 @@ from collections import Counter
 def normalizeRegion(source,region):
     firstPass = region.upper().replace("GREATER","").replace("CITY","").replace(" ","")[:4]
     return "NEWY" if region.upper().find("NY") >=0 or region.upper().find("NEW YORK") >= 0 or region.upper().find("NEWYORK") >= 0 else firstPass
+
+def countText(text_list):
+    from nltk.stem import PorterStemmer
+    from nltk.corpus import stopwords
+    import string
+    port = PorterStemmer()
+
+    elements = [x.upper() for x in sorted(text_list) if x.isalpha() and x not in string.punctuation and x not in stopwords.words('english')]
+    ele = [port.stem(x) for x in elements]
+    return Counter(ele)
+    
     
 
 

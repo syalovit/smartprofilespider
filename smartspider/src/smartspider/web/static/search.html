@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+
+<head>
+<title>Talent Neuron SmartSpider Proto-type</title>
+</head>
+
+
+<body lang=EN-US>
+<form action="/searchprofiles" method="post">
+<input type="text" name="searchterms">
+</form>
+<h2>Search Results</h2>
+
+<table border="1" style="width:100%">
+<tr>
+<th>Meta Profile Name</th>
+<th>Sub-Profiles</th></tr>
+{% for meta_name,meta_desc,meta_profs in zip(meta_profile_names,meta_profile_desc,meta_profile_prof) %}
+  <tr>
+    <td><b>{{ meta_name }}</b></td>
+    <td>
+    {% for a_link in meta_profs %}
+    <tr> 
+    <td><a href="retrieve?link={{ a_link }}">{{ a_link }}</a></td>
+    </tr>
+    {% end %}
+    </td>
+  </tr>
+{% end %}
+</table>
+</body>
+
+</html>
+

@@ -8,9 +8,10 @@ import json,os,sys
 from collections import Counter
 from itertools import combinations
 import numpy as np
-
+from smartspider.analytics.named_entity_clustering import countText
 from pymongo import Connection
 from pymongo.database import Database
+from pymongo import TEXT
 
 DBNAME = "localhost"
 USERNAME = "talneuro"
@@ -71,6 +72,24 @@ def readSeedIndex(source):
     db = MongoDBConnection.instance().get_connection().smartspider
     dbColl = getattr(db,source)    
     return [x['cluster'] for x in dbColl.find(fields=["cluster"],tailable=True,await_data=True)]
+
+def create_basic_cluster_algo0():
+    db = MongoDBConnection.instance().get_connection().smartspider
+    raw_profiles = db.raw_profiles
+    cluster_algo0 = db.cluster_algo0
+    cluster_algo0.drop()
+    cluster_algo0.create_index([('features' , TEXT)], default_language='english')
+    all_clusters = [x["cluster"] for x in raw_profiles.find(fields=["cluster"])]
+    tags = []
+    for y in all_clusters:
+        key = "_".join(y.split("_")[:3])
+        if y.find("linkedin") >= 0:
+            cluster_algo0.update({"meta_profile_key" : key } , {"meta_profile_key" : key , "features" : y.replace("_"," ") }, upsert = True)
+            
+        cluster_algo0.update({"meta_profile_key" : key } , {"$addToSet" : { "profiles" : y } }, upsert = True)
+        tags = tags + y.replace('.','').split("_")[3:-1]
+    counter = countText(tags)
+    db.meta_features.update({"algo": "cluster_algo0"} , {"algo": "cluster_algo0", "features" : counter }, upsert=True)
     
 def read_basic_cluster():
     db = MongoDBConnection.instance().get_connection().smartspider

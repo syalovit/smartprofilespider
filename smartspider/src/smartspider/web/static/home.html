@@ -1,0 +1,20 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+
+<head>
+<title>Talent Neuron SmartSpider Proto-type</title>
+</head>
+
+
+<body lang=EN-US>
+<form action="/searchprofiles" method="post">
+<input type="text" name="searchterms">
+</form>
+<h2>10 Most Common Tags</h2>
+{% for a_tag in Tags %}
+	<b>{{ a_tag }}</b>
+{% end %}
+
+</body>
+
+</html>
