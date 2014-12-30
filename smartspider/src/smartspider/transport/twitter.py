@@ -4,7 +4,7 @@ Created on Dec 19, 2014
 @author: Eloise
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
-import logging
+import logging,mechanize
 from smartspider.db.mongo_based import readSeedIndex,updateSeedIndex,storeCluster
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
 import gzip
