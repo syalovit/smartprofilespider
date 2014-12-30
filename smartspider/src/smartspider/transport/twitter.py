@@ -4,7 +4,7 @@ Created on Dec 19, 2014
 @author: Eloise
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
-import mechanize
+import logging
 from smartspider.db.mongo_based import readSeedIndex,updateSeedIndex,storeCluster
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
 import gzip
@@ -48,11 +48,13 @@ def create_profiles_idx_from_twitter_search(namedEntityRecords,maxBatchSize=1):
             constructSearchUrl(sub_range)+\
             "&src=typd&mode=users"
             z=BR.open(url)
+            logging.getLogger().log(logging.INFO,"url search for users: %s" % url)
             y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
             parsed = BeautifulSoup(y.read())
             matches = process_search_result(parsed,nerKeyList[a_batch:(a_batch+1)*maxBatchSize])
             if matches:
                 updateSeedIndex("twitter_in",matches)
+                logging.getLogger().log(logging.INFO,"matched users users: %s" % matches)
         except Exception as e:
             print sub_range
             print e
@@ -63,6 +65,7 @@ def process_twitter_profile(pBuckets):
     for a_profile in pBuckets:
         userName = a_profile['userName'][1:]
         z=BR.open("https://twitter.com/"+userName)
+        logging.getLogger().log(logging.INFO,"processing usernameL %s" % userName)
         y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
         raw = y.read()
         parsed = BeautifulSoup(raw)
