@@ -6,7 +6,7 @@ def main():
     #pprint.pprint(read_cluster_skills_algo1())
 #    bucketMap,bucketProfileMap,bucketStats = read_basic_cluster()
 #    import pprint
-#    pprint.pprint(bucketProfileMap)
+##    pprint.pprint(bucketProfileMap)
 #    print bucketStats
     create_basic_cluster_algo0()
     

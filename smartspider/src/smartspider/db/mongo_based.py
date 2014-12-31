@@ -13,7 +13,7 @@ from pymongo import Connection
 from pymongo.database import Database
 from pymongo import TEXT
 
-DBNAME = "localhost"
+DBNAME = "184.106.134.138"
 USERNAME = "talneuro"
 PASSWD = "talneuro"
 
@@ -68,10 +68,13 @@ def updateSeedIndex(source,namedEntity):
         dbColl.update({"cluster" : n}, {"cluster" : n} , upsert = True)
     
 
-def readSeedIndex(source):
+def readSeedIndex(source,tail=True):
     db = MongoDBConnection.instance().get_connection().smartspider
     dbColl = getattr(db,source)    
-    return [x['cluster'] for x in dbColl.find(fields=["cluster"],tailable=True,await_data=True)]
+    if tail:
+        return [x['cluster'] for x in dbColl.find(fields=["cluster"],tailable=True,await_data=True)]
+    else:
+        return [x['cluster'] for x in dbColl.find(fields=["cluster"])]
 
 def create_basic_cluster_algo0():
     db = MongoDBConnection.instance().get_connection().smartspider

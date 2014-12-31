@@ -63,26 +63,30 @@ def process_twitter_profile(pBuckets):
     if not isinstance(pBuckets,list):
         pBuckets = [pBuckets]
     for a_profile in pBuckets:
-        userName = a_profile['userName'][1:]
-        z=BR.open("https://twitter.com/"+userName)
-        logging.getLogger().log(logging.INFO,"processing usernameL %s" % userName)
-        y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
-        raw = y.read()
-        parsed = BeautifulSoup(raw)
-        profilesummary = parsed.find("p", {"class" : "ProfileHeaderCard-bio u-dir"},recursive=True).getString()
-        if profilesummary:
-            profilesummary = profilesummary.encode('ascii','ignore').decode('ascii')
-        region = parsed.find("span", {"class" : "ProfileHeaderCard-locationText u-dir" }).getString() or "NONE"
-        tweets = [x.getString() for x in parsed.findAll("p" ,{"class" : "ProfileTweet-text js-tweet-text u-dir"})]
-        ner = dict(userName=userName,raw=raw,profilesummary=profilesummary,
-                                    region=region,tweets=tweets,lastName=a_profile["fullName"].split(' ')[-1],firstName=" ".join(a_profile["fullName"].split(' ')[:-1]))
-        cluster = computeNamedEntityClusterAlgo1(TWITTER,ner)
         try:
-            storeCluster(TWITTER,cluster,ner)
+            userName = a_profile['userName'][1:]
+            z=BR.open("https://twitter.com/"+userName)
+            logging.getLogger().log(logging.INFO,"processing usernameL %s" % userName)
+            y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
+            raw = y.read()
+            parsed = BeautifulSoup(raw)
+            profilesummary = parsed.find("p", {"class" : "ProfileHeaderCard-bio u-dir"},recursive=True).getString()
+            if profilesummary:
+                profilesummary = profilesummary.encode('ascii','ignore').decode('ascii')
+            region = parsed.find("span", {"class" : "ProfileHeaderCard-locationText u-dir" }).getString() or "NONE"
+            tweets = [x.getString() for x in parsed.findAll("p" ,{"class" : "ProfileTweet-text js-tweet-text u-dir"})]
+            ner = dict(userName=userName,raw=raw,profilesummary=profilesummary,
+                                        region=region,tweets=tweets,lastName=a_profile["fullName"].split(' ')[-1],firstName=" ".join(a_profile["fullName"].split(' ')[:-1]))
+            cluster = computeNamedEntityClusterAlgo1(TWITTER,ner)
+            try:
+                storeCluster(TWITTER,cluster,ner)
+            except Exception as ex:
+                print cluster
+                print ner
+                print ex
         except Exception as ex:
-            print cluster
-            print ner
-            print ex
+            logging.getLogger().log(logging.CRITICAL,"failed for %s" % userName)
+            logging.getLogger().log(logging.CRITICAL,ex)
 
 def seed_twitter():
     while True:
@@ -94,3 +98,9 @@ def process_twitter():
         entities = readSeedIndex("twitter_in")
         for aBucket in entities:
             process_twitter_profile(aBucket)
+
+def process_twitter_clean():
+    entities = readSeedIndex("twitter_in",False)
+    for aBucket in entities:
+        process_twitter_profile(aBucket)
+

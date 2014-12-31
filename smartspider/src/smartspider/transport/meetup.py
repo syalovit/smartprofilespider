@@ -50,6 +50,7 @@ def constructSearchUrl(NER):
 
 def create_profiles_idx_from_meetup_search(namedEntityRecord):
     name = namedEntityRecord['firstName']+" "+namedEntityRecord['lastName']
+    logging.getLogger().log(logging.CRITICAL,"processing meetup for name %s" % name)    
     def process_name(x):
         return x.text.split('-')[0]    
     def fuzzy_match(x,name):
@@ -60,7 +61,17 @@ def create_profiles_idx_from_meetup_search(namedEntityRecord):
         # THERE IS AN ISSUE WITH BING NOT RETURNING THE FIRST RESULT FOR THIS INTERFACE
         # IF A NER BELONGS TO ONLY ONE GROUP, OR IS NOT PUBLIC HE WILL BE MISSED IN THIS PROFILE SEARCH
         url = constructSearchUrl(namedEntityRecord)
-        z=BR.open(url)
+        try:
+            z=BR.open(url)
+        except Exception as ex:
+            try:
+                import time
+                time.sleep(5)
+                z=BR.open(url)
+            except Exception as ex:
+                time.sleep(10)
+                z=BR.open(url)
+
         y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
         parsed = BeautifulSoup(y.read())
         results = parsed.findAll("li", {"class" : "b_algo"})
@@ -76,7 +87,12 @@ def create_profiles_idx_from_meetup_search(namedEntityRecord):
         if meta_links:
             the_target_group = meta_links[0][1]
             logging.getLogger().log(logging.INFO,"Member Id Used: %s" % the_target_group)
-            z=BR.open(the_target_group+"?showAllGroups=true#my-meetup-groups-list") 
+            try:
+                z=BR.open(the_target_group+"?showAllGroups=true#my-meetup-groups-list")
+            except Exception as ex:
+                print  "failed to open: ",the_target_group+"?showAllGroups=true#my-meetup-groups-list"
+                print namedEntityRecord
+                print ex
             y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
             raw = y.read()
             parsed = BeautifulSoup(raw)
@@ -88,7 +104,7 @@ def create_profiles_idx_from_meetup_search(namedEntityRecord):
                 userName = 'NONE'
             # replace this with nlp processing for location
             def process_location(x):
-                return x[0].split(',')[0],x[2],x[3],x[4]
+                return x[0].split(',')+x[2:]
             ele = [x.text for x in region.findAll()]
             location = process_location(ele)
             interests = " ".join([x.text for x in parsed.findAll("a" , {"class" : re.compile("topic-id-")})])
@@ -116,6 +132,7 @@ def create_profiles_idx_from_meetup_search(namedEntityRecord):
     except Exception as e:
         print namedEntityRecord
         print e
+        print url
     
     
     
@@ -132,7 +149,19 @@ def main():
         for a_ner in NER:
             create_profiles_idx_from_meetup_search(a_ner)
         
-       
+
+def clean_read_meetup():
+    NER = readSeedIndex("linkedin",False)
+    notProcessed = False
+    ignoreProcessed = False
+    gate = {u'lastName': u'Silbernagel', u'firstName': u'Chris'}
+    for a_ner in NER:
+        notProcessed = a_ner == gate
+        if notProcessed or ignoreProcessed:
+            ignoreProcessed = True
+            create_profiles_idx_from_meetup_search(a_ner)
+        else:
+            logging.getLogger().log(logging.CRITICAL,"ignoring %s" %a_ner)
 
 
 

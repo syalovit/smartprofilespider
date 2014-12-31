@@ -119,3 +119,22 @@ def main():
             except Exception as ex:
                 print ex
                 pass
+
+def clean_read():
+        links = readSeedIndex(LINKEDIN_INPUT,False)
+        logging.getLogger().log(logging.CRITICAL,"number of links from linkedin %s" % len(links))
+        notProcessed = False
+        ignoreProcessed = False
+        
+        for link in links:
+            try:
+                start_at_link = 'https://www.linkedin.com/in/gladyscj'
+                notProcessed = start_at_link == link
+                if notProcessed or ignoreProcessed:
+                    process_linkedin_profile(link)
+                    ignoreProcessed = True
+                else:
+                    logging.getLogger().log(logging.CRITICAL,"ignoring link %s" % link)
+            except Exception as ex:
+                print ex
+                pass
