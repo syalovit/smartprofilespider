@@ -36,7 +36,7 @@ class MainHandler(BaseHandler):
         from smartspider.db.mongo_based import MongoDBConnection
         db = MongoDBConnection.instance().get_connection().smartspider
         entries = db.meta_features.find_one()['features']
-        tags = sorted(entries,key=entries.get,reverse=True)[:10]
+        tags = sorted(entries,key=entries.get,reverse=True)[:30]
         return self.render("static/home.html",Tags=tags)
 
 
