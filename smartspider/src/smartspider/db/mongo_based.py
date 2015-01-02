@@ -82,16 +82,21 @@ def create_basic_cluster_algo0():
     cluster_algo0 = db.cluster_algo0
     cluster_algo0.drop()
     cluster_algo0.create_index([('features' , TEXT)], default_language='english')
-    all_clusters = [x["cluster"] for x in raw_profiles.find(fields=["cluster"])]
+#    all_clusters = [x["cluster"] for x in raw_profiles.find(fields=["cluster"])]
+    all_data = [x for x in raw_profiles.find()]
     tags = []
-    for y in all_clusters:
-        key = "_".join(y.split("_")[:3])
-        if y.find("linkedin") >= 0:
-            cluster_algo0.update({"meta_profile_key" : key } , {"meta_profile_key" : key , "features" : y.replace("_"," ") }, upsert = True)
-            
-        cluster_algo0.update({"meta_profile_key" : key } , {"$addToSet" : { "profiles" : y } }, upsert = True)
-        new_tags = [x for x in y.replace('.','').split("_")[3:-1] if x!="NONE"]        
-        tags = tags + new_tags 
+    for y in all_data:
+        cluster_key = y['cluster']
+        key = "_".join(cluster_key.split("_")[:3])
+        cluster_data = y['entity']        
+        if cluster_key.find("linkedin") >= 0:
+            profile_data = " ".join(cluster_data.get('interests',[]))+cluster_data['profilesummary']
+            cluster_algo0.update({"meta_profile_key" : key } , {"meta_profile_key" : key , "features" : profile_data }, upsert = True)
+            new_tags = profile_data.split(' ')
+        else:
+            new_tags = cluster_data['profilesummary'].split(' ')          
+        tags = tags + new_tags             
+        cluster_algo0.update({"meta_profile_key" : key } , {"$addToSet" : { "profiles" : cluster_key } }, upsert = True)
     counter = countText(tags)
     db.meta_features.update({"algo": "cluster_algo0"} , {"algo": "cluster_algo0", "features" : counter }, upsert=True)
     
@@ -108,12 +113,12 @@ def read_basic_cluster():
     for y in all_clusters:
         key = "_".join(y.split("_")[:3])
         bucketMap[key].append(y)
-    for k,v in bucketMap.iteritems():
-        if len(v) >= 2:            
-            try:
-                bucketProfileMap[k] = [retrieveCluster('NONE',v)['entity']['profilesummary'] for v in v]
-            except Exception as e:
-                print e
+#    for k,v in bucketMap.iteritems():
+#        if len(v) >= 2:            
+#            try:
+#                bucketProfileMap[k] = [retrieveCluster('NONE',v)['entity']['profilesummary'] for v in v]
+#            except Exception as e:
+#                print e
     totalCount = [len(x) for x in bucketMap.values()]
     totalOnes = len([x for x in totalCount if x==1])
     totalTwos = len([x for x in totalCount if x==2])
