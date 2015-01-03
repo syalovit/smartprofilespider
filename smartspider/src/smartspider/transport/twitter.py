@@ -7,9 +7,11 @@ from BeautifulSoup import BeautifulSoup,NavigableString
 import logging,mechanize
 from smartspider.db.mongo_based import readSeedIndex,updateSeedIndex,storeCluster
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
+from smartspider.transport.linkedin import LINKEDIN
 import gzip
 import StringIO
 TWITTER = "twitter"
+TWITTER_IN = "twitter_in"
 BR = mechanize.Browser()
 BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0'),
 ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
@@ -88,19 +90,48 @@ def process_twitter_profile(pBuckets):
             logging.getLogger().log(logging.CRITICAL,"failed for %s" % userName)
             logging.getLogger().log(logging.CRITICAL,ex)
 
-def seed_twitter():
+def seed_twitter(gate = "COWDEN"):
+    notProcessed = False
+    ignoreProcess = False    
+    NER = readSeedIndex(LINKEDIN)
+    cnt = 0
+    Found = False
+    while (not Found) and cnt <= len(NER):
+        x = NER[cnt]
+        Found = x['firstName'].upper().find(gate)>=0 or x['lastName'].upper().find(gate) >=0
+        cnt = cnt + 1
+    NER = NER[cnt:]
     while True:
-        NER = readSeedIndex("linkedin")
         create_profiles_idx_from_twitter_search(NER)
+        NER = readSeedIndex("linkedin")
 
-def process_twitter():
+def process_twitter(    gate = '@davecowden'):
+    entities = readSeedIndex(TWITTER_IN)
+    notProcessed = False
+    ignoreProcessed = False
+    logging.getLogger().log(logging.CRITICAL,"starting to process %s profiles " % len(entities))    
+    for aBucket in entities:
+        notProcessed = aBucket['userName'] == gate
+        if notProcessed or ignoreProcessed:
+            ignoreProcessed = True        
+            process_twitter_profile(aBucket)
+        else:
+            logging.getLogger().log(logging.CRITICAL,"ignoring bucket %s" % aBucket)    
     while True:
         entities = readSeedIndex("twitter_in")
         for aBucket in entities:
-            process_twitter_profile(aBucket)
+                process_twitter_profile(aBucket)
 
-def process_twitter_clean():
-    entities = readSeedIndex("twitter_in",False)
+def process_twitter_clean(gate = '@ShowdownJoe'):
+    entities = readSeedIndex(TWITTER_IN,False)
+    notProcessed = False
+    ignoreProcessed = False    
+    logging.getLogger().log(logging.CRITICAL,"starting to process %s profiles " % len(entities))    
     for aBucket in entities:
-        process_twitter_profile(aBucket)
+        notProcessed = aBucket['userName'] == gate
+        if notProcessed or ignoreProcessed:
+            ignoreProcessed = True        
+            process_twitter_profile(aBucket)
+        else:
+            logging.getLogger().log(logging.CRITICAL,"ignoring bucket %s" % aBucket)
 

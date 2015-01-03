@@ -8,12 +8,13 @@ import json,os,sys
 from collections import Counter
 from itertools import combinations
 import numpy as np
-from smartspider.analytics.named_entity_clustering import countText
+from smartspider.analytics.named_entity_clustering import normalizeWords,normalizeInterestWords,classifyProfile
 from pymongo import Connection
 from pymongo.database import Database
 from pymongo import TEXT
 
-DBNAME = "184.106.134.138"
+
+DBNAME = "localhost"
 USERNAME = "talneuro"
 PASSWD = "talneuro"
 
@@ -91,13 +92,17 @@ def create_basic_cluster_algo0():
         cluster_data = y['entity']        
         if cluster_key.find("linkedin") >= 0:
             profile_data = " ".join(cluster_data.get('interests',[]))+cluster_data['profilesummary']
-            cluster_algo0.update({"meta_profile_key" : key } , {"meta_profile_key" : key , "features" : profile_data }, upsert = True)
+            cluster_algo0.update({"meta_profile_key" : key } , {"meta_profile_key" : key , 
+                                                                "features" : profile_data }, upsert = True)
             new_tags = profile_data.split(' ')
         else:
-            new_tags = cluster_data['profilesummary'].split(' ')          
-        tags = tags + new_tags             
-        cluster_algo0.update({"meta_profile_key" : key } , {"$addToSet" : { "profiles" : cluster_key } }, upsert = True)
-    counter = countText(tags)
+            new_tags = cluster_data['profilesummary'].split(' ')
+                      
+        tags = tags + new_tags
+        graph = Counter(normalizeInterestWords(new_tags))  
+        class_of_graph = classifyProfile(cluster_data)           
+        cluster_algo0.update({"meta_profile_key" : key } , {"$addToSet" : { "profiles" : cluster_key } , "$addToSet" : {class_of_graph : graph } }, upsert = True)
+    counter = Counter(normalizeWords(tags))
     db.meta_features.update({"algo": "cluster_algo0"} , {"algo": "cluster_algo0", "features" : counter }, upsert=True)
     
 def read_basic_cluster():

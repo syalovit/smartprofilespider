@@ -17,6 +17,7 @@ import re
 from smartspider.db.mongo_based import readSeedIndex,updateSeedIndex,storeCluster
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
 import logging
+from smartspider.transport.linkedin import LINKEDIN
 
 BR = mechanize.Browser()
 BR.set_handle_robots(False)
@@ -145,16 +146,16 @@ def create_profiles_idx_from_meetup_search(namedEntityRecord):
 def main():
     while True:
         import time
-        NER = readSeedIndex("linkedin")
+        NER = readSeedIndex(LINKEDIN)
         for a_ner in NER:
             create_profiles_idx_from_meetup_search(a_ner)
         
 
-def clean_read_meetup():
-    NER = readSeedIndex("linkedin",False)
+def clean_read_meetup(    gate = {u'lastName': u'Levinshtein', u'firstName': u'Gal'}):
+    NER = readSeedIndex(LINKEDIN,True)
     notProcessed = False
     ignoreProcessed = False
-    gate = {u'lastName': u'Silbernagel', u'firstName': u'Chris'}
+    logging.getLogger().log(logging.CRITICAL,"starting to process %s profiles " % len(NER))
     for a_ner in NER:
         notProcessed = a_ner == gate
         if notProcessed or ignoreProcessed:
@@ -162,8 +163,8 @@ def clean_read_meetup():
             create_profiles_idx_from_meetup_search(a_ner)
         else:
             logging.getLogger().log(logging.CRITICAL,"ignoring %s" %a_ner)
-
-
+    logging.getLogger().log(logging.CRITICAL,"completed processing, last element %s" % a_ner)
+    main()
 
  
 

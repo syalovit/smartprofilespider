@@ -76,8 +76,7 @@ def process_linkedin_profile(a_link):
 def harvest_profiles_from_bing(constraint_based="'new+york+city'+and+'java'",max_links=5000):
     import string
     for s in string.letters:
-        logging.getLogger().log(logging.INFO,"Seeding letter %s" %s)
-        #url = "http://www.bing.com/search?q=site:https://www.linkedin.com/in+'/in/"+s+"'+"+constraint_based+"&qs=n&form=QBRE"
+        logging.getLogger().log(logging.INFO,"Seeding letter %s" %s)        
         a_url = "http://www.bing.com/search?q=site%3Ahttps%3A%2F%2Fwww.linkedin.com%2Fin+%27%2Fin%2F"+s+"%27+%27new+york+city%27+and+%27java%27&go=Submit&qs=bs&form=QBRE"
         logging.getLogger().log(logging.INFO,"url is %s" %a_url)
         z=BR.open(a_url)
@@ -118,17 +117,16 @@ def main():
                 process_linkedin_profile(link)
             except Exception as ex:
                 print ex
-                pass
+                continue
 
-def clean_read():
+def clean_read(start_at_link = 'https://www.linkedin.com/in/kursadd'):
         links = readSeedIndex(LINKEDIN_INPUT,False)
         logging.getLogger().log(logging.CRITICAL,"number of links from linkedin %s" % len(links))
         notProcessed = False
         ignoreProcessed = False
         
         for link in links:
-            try:
-                start_at_link = 'https://www.linkedin.com/in/gladyscj'
+            try:                
                 notProcessed = start_at_link == link
                 if notProcessed or ignoreProcessed:
                     process_linkedin_profile(link)
@@ -137,4 +135,4 @@ def clean_read():
                     logging.getLogger().log(logging.CRITICAL,"ignoring link %s" % link)
             except Exception as ex:
                 print ex
-                pass
+                continue

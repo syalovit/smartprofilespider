@@ -42,16 +42,21 @@ class MainHandler(BaseHandler):
 
     def post(self):
         from smartspider.db.mongo_based import MongoDBConnection
+        from smartspider.analytics.named_entity_clustering import WORKGRAPH,PERSONALGRAPH
+        from collections import Counter
+        import operator
         db = MongoDBConnection.instance().get_connection().smartspider
         searchterms = self.get_argument("searchterms")
-        results = db.command("text","cluster_algo0",search=searchterms,limit=100,
-                            filter={"$or" : [ { "profiles" : { "$size" : 2 }}, {"profiles" : { "$size" : 3 } }]})
+        results = db.command("text","cluster_algo0",search=searchterms)
+#                            filter={"$or" : [ { "profiles" : { "$size" : 2 }}, {"profiles" : { "$size" : 3 } }]})
         results = [res['obj'] for res in results['results']]
         meta_profile_name = [x['meta_profile_key'].replace("_"," ") for x in results]
         meta_profile_desc = [x['features'] for x in results]
-        meta_profile_prof = [x['profiles'] for x in results]        
+        meta_profile_prof = [x['profiles'] for x in results]
+        meta_profile_workgraph = reduce(operator.add,[x[WORKGRAPH] for x in results],Counter())        
+        meta_profile_personalgraph = reduce(operator.add,[x[PERSONALGRAPH] for x in results], Counter())         
         return self.render("static/search.html",meta_profile_names = meta_profile_name, meta_profile_desc = meta_profile_desc,
-                           meta_profile_prof = meta_profile_prof)
+                           meta_profile_prof = meta_profile_prof, meta_profile_workgraph = meta_profile_workgraph, meta_profile_personalgraph = meta_profile_personalgraph)
 
 
 class RetrieveHandler(BaseHandler):    

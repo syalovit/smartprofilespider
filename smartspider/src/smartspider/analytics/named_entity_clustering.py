@@ -4,25 +4,40 @@ Created on Dec 21, 2014
 @author: Eloise
 '''
 
-from collections import Counter
+WORKGRAPH = "workgraph"
+PERSONALGRAPH = "personalgraph"
 
+from collections import Counter
+    from nltk.stem import PorterStemmer
+    from nltk.corpus import stopwords
+    import string
 
 def normalizeRegion(source,region):
     firstPass = region.upper().replace("GREATER","").replace("CITY","").replace(" ","")[:4]
     return "NEWY" if region.upper().find("NY") >=0 or region.upper().find("NEW YORK") >= 0 or region.upper().find("NEWYORK") >= 0 else firstPass
 
-def countText(text_list):
-    from nltk.stem import PorterStemmer
-    from nltk.corpus import stopwords
-    import string
-    port = PorterStemmer()
-
-    elements = [x.upper() for x in sorted(text_list) if x.isalpha() and x not in string.punctuation and x not in stopwords.words('english')]
-    ele = [port.stem(x) for x in elements]
-    return Counter(ele)
+def normalizeWords(text_list):
+    port = PorterStemmer()    
+    replace_punctuation = string.maketrans(string.punctuation, ' '*len(string.punctuation))    
+    return [port.stem(x.upper().translate(replace_punctuation)) for x in text_list if x.isalpha() and x not in stopwords.words('english')]
     
     
+def classifyProfile(source,ner):
+    if source == 'linkedin':
+        return WORKGRAPH
+    else:
+        return PERSONALGRAPH
 
+def normalizeInterestWords(source,ner):
+
+    if source == "linkedin":
+        words = ner['interests'] + ner['profilesummary'].split(' ')
+    else:
+        profilesummary = ner['profilesummary'].split(' ')
+    if profilesummary:
+        return normalizeWords(profilesummary)
+    else:
+        return []
 
 def normalizeSummary(source,ner):
     # We use interests from linkedin which is a better match to twitter and meetup
@@ -37,6 +52,9 @@ def normalizeSummary(source,ner):
     else:
         profilesummary = ner['profilesummary']
     if profilesummary:
+        replace_punctuation = string.maketrans(string.punctuation, ' '*len(string.punctuation))
+        profilesummary = profilesummary.translate(replace_punctuation)
+        
         elements = [x.upper() for x in sorted(profilesummary.split(" ")) if x.isalpha() and x not in string.punctuation and x not in stopwords.words('english')]
         ele = [port.stem(x) for x in elements]
         hiScore = [x[0] for x in list(Counter(ele).most_common(10))]        
