@@ -8,9 +8,9 @@ WORKGRAPH = "workgraph"
 PERSONALGRAPH = "personalgraph"
 
 from collections import Counter
-    from nltk.stem import PorterStemmer
-    from nltk.corpus import stopwords
-    import string
+from nltk.stem import PorterStemmer
+from nltk.corpus import stopwords
+import string
 
 def normalizeRegion(source,region):
     firstPass = region.upper().replace("GREATER","").replace("CITY","").replace(" ","")[:4]
@@ -19,7 +19,7 @@ def normalizeRegion(source,region):
 def normalizeWords(text_list):
     port = PorterStemmer()    
     replace_punctuation = string.maketrans(string.punctuation, ' '*len(string.punctuation))    
-    return [port.stem(x.upper().translate(replace_punctuation)) for x in text_list if x.isalpha() and x not in stopwords.words('english')]
+    return [port.stem(str(x.encode('ascii','ignore').decode('ascii')).upper().translate(replace_punctuation)) for x in text_list if x.isalpha() and x not in stopwords.words('english')]
     
     
 def classifyProfile(source,ner):
@@ -47,7 +47,7 @@ def normalizeSummary(source,ner):
     import string
     port = PorterStemmer()
 
-    if source == "linked":
+    if source == "linkedin":
         profilesummary = ner['interests'] or ner['profilesummary']
     else:
         profilesummary = ner['profilesummary']

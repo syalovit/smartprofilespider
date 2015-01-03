@@ -15,10 +15,17 @@
 <table border="1" style="width:100%">
 <tr>
 <th>Meta Profile Name</th>
+<th>Work/Personal Interest Graph</th>
 <th>Sub-Profiles</th></tr>
-{% for meta_name,meta_desc,meta_profs in zip(meta_profile_names,meta_profile_desc,meta_profile_prof) %}
+{% for meta_name,meta_desc,meta_profs,mixed_graph_ele in zip(meta_profile_names,meta_profile_desc,meta_profile_prof,meta_mixed_graph) %}
   <tr>
     <td><b>{{ meta_name }}</b></td>
+    <td>
+    {% for a_link in mixed_graph_ele %} 
+    <br><a href="retrieve_meta_profile?link={{ meta_name }}&interest={{ a_link }}">{{ a_link }}</a>
+    {% end %}
+    </td>
+    
     <td>
     {% for a_link in meta_profs %} 
     <br><a href="retrieve?link={{ a_link }}">{{ a_link }}</a></br>

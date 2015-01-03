@@ -78,30 +78,35 @@ def readSeedIndex(source,tail=True):
         return [x['cluster'] for x in dbColl.find(fields=["cluster"])]
 
 def create_basic_cluster_algo0():
+    from smartspider.transport.linkedin import LINKEDIN
     db = MongoDBConnection.instance().get_connection().smartspider
     raw_profiles = db.raw_profiles
     cluster_algo0 = db.cluster_algo0
     cluster_algo0.drop()
     cluster_algo0.create_index([('features' , TEXT)], default_language='english')
 #    all_clusters = [x["cluster"] for x in raw_profiles.find(fields=["cluster"])]
-    all_data = [x for x in raw_profiles.find()]
     tags = []
-    for y in all_data:
+    for y in raw_profiles.find():
         cluster_key = y['cluster']
-        key = "_".join(cluster_key.split("_")[:3])
-        cluster_data = y['entity']        
-        if cluster_key.find("linkedin") >= 0:
-            profile_data = " ".join(cluster_data.get('interests',[]))+cluster_data['profilesummary']
+        key_elements = cluster_key.split("_")
+        key = "_".join(key_elements[:3])
+        cluster_data = y['entity'] 
+        profilesummary = cluster_data.get('profilesummary','') or ''               
+        if cluster_key.find(LINKEDIN) >= 0:
+            region = cluster_data.get('region','') or ''            
+            profile_data = " ".join(cluster_data.get('interests',[]))+ profilesummary + region 
             cluster_algo0.update({"meta_profile_key" : key } , {"meta_profile_key" : key , 
                                                                 "features" : profile_data }, upsert = True)
-            new_tags = profile_data.split(' ')
+            new_tags = profile_data.split(' ')            
         else:
-            new_tags = cluster_data['profilesummary'].split(' ')
+            new_tags = profilesummary.split(' ')
+        
+        source = key_elements[-1]  
                       
         tags = tags + new_tags
-        graph = Counter(normalizeInterestWords(new_tags))  
-        class_of_graph = classifyProfile(cluster_data)           
-        cluster_algo0.update({"meta_profile_key" : key } , {"$addToSet" : { "profiles" : cluster_key } , "$addToSet" : {class_of_graph : graph } }, upsert = True)
+        graph = Counter(normalizeWords(new_tags))  
+        class_of_graph = classifyProfile(source,cluster_data)           
+        cluster_algo0.update({"meta_profile_key" : key } , {"$addToSet" : { "profiles" : cluster_key , class_of_graph : graph } }, upsert = True)
     counter = Counter(normalizeWords(tags))
     db.meta_features.update({"algo": "cluster_algo0"} , {"algo": "cluster_algo0", "features" : counter }, upsert=True)
     

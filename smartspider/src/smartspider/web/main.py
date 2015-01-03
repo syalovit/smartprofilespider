@@ -53,10 +53,13 @@ class MainHandler(BaseHandler):
         meta_profile_name = [x['meta_profile_key'].replace("_"," ") for x in results]
         meta_profile_desc = [x['features'] for x in results]
         meta_profile_prof = [x['profiles'] for x in results]
-        meta_profile_workgraph = reduce(operator.add,[x[WORKGRAPH] for x in results],Counter())        
-        meta_profile_personalgraph = reduce(operator.add,[x[PERSONALGRAPH] for x in results], Counter())         
+        meta_profile_workgraph = reduce(operator.add,[Counter(x.get(WORKGRAPH,[{}])[0].iteritems()) for x in results],Counter())
+        worktags = sorted(meta_profile_workgraph,key=meta_profile_workgraph.get,reverse=True)[:4]        
+        meta_profile_personalgraph = reduce(operator.add,[Counter(x.get(PERSONALGRAPH,[{}])[0].iteritems()) for x in results], Counter())
+        personaltags = sorted(meta_profile_personalgraph,key=meta_profile_personalgraph.get,reverse=True)[:4]
+        meta_mixed_graph = worktags + personaltags
         return self.render("static/search.html",meta_profile_names = meta_profile_name, meta_profile_desc = meta_profile_desc,
-                           meta_profile_prof = meta_profile_prof, meta_profile_workgraph = meta_profile_workgraph, meta_profile_personalgraph = meta_profile_personalgraph)
+                           meta_profile_prof = meta_profile_prof, meta_mixed_graph = meta_mixed_graph)
 
 
 class RetrieveHandler(BaseHandler):    
