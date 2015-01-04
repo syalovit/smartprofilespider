@@ -7,45 +7,47 @@
 
 
 <body lang=EN-US>
-<h2>Meta Profile of {{ meta_name }}, from {{ region }} </h2>
-<h3>Work</h3>
-<h4>Title</h4>
+<h1>Meta Profile of {{ meta_name }}, from {{ region }} </h1>
+<h2>Work</h2>
+<h3>Title</h3>
 {{ title }}
 <br>
-<h4>Background Summary</h4>
+<h3>Background Summary</h3>
 {{ jobprofilesummary }}
 <br>
-<h4>Currently working at</h4>
+<h3>Currently working at</h3>
 {{ currentjob }}
 <br>
-<h4>Previously worked at</h4>
+<h3>Previously worked at</h3>
 {% for a_job in previous_jobs %}
 {{ a_job }}
 <br>
 {% end %}
-<h4>Education</h4>
+<h3>Education</h3>
 {% for an_edu in education %}
 {{ an_edu }}
 <br>
 {% end %}
 
+
+
 <br>
-<h4>Work Interests<h4>
+<h3>Work Interests<h3>
 {% for interest in work_interests %}
 {{ interest }}
 <br>
 {% end %}
 
-<h3>Personal</h3>
-<h4>Interests and Hobbies</h4>
+<h2>Personal</h2>
+<h3>Interests and Hobbies</h3>
 {{ interests_and_hobbies }}
 <br>
-<h4>Groups</h4>
+<h3>Groups</h3>
 {% for a_group in currentgroups %}
 {{ a_group }}
 <br>
 {% end %}
-<h4>Passions</h4>
+<h3>Passions</h3>
 {% for a_tweet in current_tweets %}
 {{ a_tweet }}
 <br>

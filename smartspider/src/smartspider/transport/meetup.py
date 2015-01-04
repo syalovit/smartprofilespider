@@ -17,7 +17,7 @@ import re
 from smartspider.db.mongo_based import readSeedIndex,updateSeedIndex,storeCluster
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
 import logging
-from smartspider.transport.linkedin import LINKEDIN
+from smartspider.db import LINKEDIN,MEETUP
 
 BR = mechanize.Browser()
 BR.set_handle_robots(False)
@@ -27,7 +27,7 @@ BR.addheaders = [('User-agent', 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 
 ('Accept-Language', 'en-US,en;q=0.5'),
 ('Cache-Control', 'max-age=0'),
 ('Connection', 'keep-alive')]
-MEETUP = "meetup"
+
 def fuzzyMatchName(fullName,aNER):
     return fullName.upper().replace(" ","") in aNER
 

@@ -7,11 +7,9 @@ from BeautifulSoup import BeautifulSoup,NavigableString
 import logging,mechanize
 from smartspider.db.mongo_based import readSeedIndex,updateSeedIndex,storeCluster
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
-from smartspider.transport.linkedin import LINKEDIN
+from smartspider.db import LINKEDIN,TWITTER,TWITTER_IN
 import gzip
 import StringIO
-TWITTER = "twitter"
-TWITTER_IN = "twitter_in"
 BR = mechanize.Browser()
 BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0'),
 ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),

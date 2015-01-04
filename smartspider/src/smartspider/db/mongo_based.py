@@ -69,7 +69,9 @@ def findCluster(cluster,algo="algo0"):
     dbColl = getattr(db,'cluster_'+algo)
     return dbColl.find_one({'meta_profile_key' : cluster.replace(' ','_')})
     
-    
+def retrieveProfilesFromCluster(cluster,algo="algo0"):
+    aCluster = findCluster(cluster,algo)
+    return retrieveClusters("NONE",aCluster['profiles'])
 
 
 def updateSeedIndex(source,namedEntity):
@@ -170,7 +172,11 @@ def read_cluster_skills_algo1():
     return reduxBucketMap
                 
             
-        
+def searchCluster(searchterms,algo="algo0"):
+    db = MongoDBConnection.instance().get_connection().smartspider        
+    results = db.command("text","cluster_"+algo,search=searchterms)
+    return [res['obj'] for res in results['results']]
+    
         
     
     

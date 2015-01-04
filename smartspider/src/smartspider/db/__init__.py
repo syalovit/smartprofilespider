@@ -1,0 +1,5 @@
+TWITTER = "twitter"
+TWITTER_IN = "twitter_in"
+LINKEDIN_INPUT = "linkedin_input"
+LINKEDIN = "linkedin"
+MEETUP = "meetup"

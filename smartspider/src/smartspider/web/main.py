@@ -42,24 +42,17 @@ class MainHandler(BaseHandler):
 
 
     def post(self):
-        from smartspider.db.mongo_based import MongoDBConnection
-        from smartspider.analytics.named_entity_clustering import WORKGRAPH,PERSONALGRAPH
-        from smartspider.transport.linkedin import LINKEDIN
-        from collections import Counter
-        import operator
-        db = MongoDBConnection.instance().get_connection().smartspider
+        from smartspider.db.mongo_based import searchCluster
+        from smartspider.analytics.named_entity_clustering import genWorkGraph,genPersonalGraph
         searchterms = self.get_argument("searchterms")
-        results = db.command("text","cluster_algo0",search=searchterms)
-        results = [res['obj'] for res in results['results']]
+        results = searchCluster(searchterms)
         meta_mixed_graph,meta_profile_name,meta_profile_desc,meta_profile_prof = [],[],[],[]
         for a_result in results:
-            meta_profile_name.append(a_result['meta_profile_key'].replace("_"," "))
+            meta_profile_name.append(a_result['meta_profile_key'].replace("_"," ")) 
             meta_profile_desc.append(a_result['features'])
             meta_profile_prof.append(a_result['profiles'])
-            meta_profile_workgraph = reduce(operator.add,[Counter(a_counter.iteritems()) for a_counter in a_result.get(WORKGRAPH,[{}])], Counter())
-            meta_profile_personalgraph = reduce(operator.add,[Counter(a_counter.iteritems()) for a_counter in a_result.get(PERSONALGRAPH,[{}])], Counter())
-            worktags = sorted(meta_profile_workgraph,key=meta_profile_workgraph.get,reverse=True)[:6]
-            personaltags = sorted(meta_profile_personalgraph,key=meta_profile_personalgraph.get,reverse=True)[:6]
+            worktags = genWorkGraph(a_result)
+            personaltags = genPersonalGraph(a_result)
             meta_mixed_graph.append(worktags + personaltags)
                 
         return self.render("static/search.html",meta_profile_names = meta_profile_name, meta_profile_desc = meta_profile_desc,
@@ -79,55 +72,18 @@ class retrieveClusterHandler(BaseHandler):
 
 class RetrieveMetaProfileHandler(BaseHandler):    
     def get(self):  
-        from smartspider.db.mongo_based import findCluster,retrieveClusters
-        from smartspider.transport.linkedin import LINKEDIN
-        from smartspider.transport.twitter import TWITTER
-        from smartspider.transport.meetup import MEETUP
-        from smartspider.analytics.named_entity_clustering import WORKGRAPH,PERSONALGRAPH
-        import operator
-        from collections import Counter        
+        from smartspider.db.mongo_based import findCluster,retrieveClusters,retrieveProfilesFromCluster
+        from smartspider.profile.meta_profile_algo0 import MetaProfile
         link = self.get_argument("link")
         interest=self.get_argument("interest")
-        result = findCluster(link)
-        all_profiles = [x for x in retrieveClusters("NONE",result['profiles'])]
-        linkedin_profile = [x1 for x1 in all_profiles if LINKEDIN in x1['cluster']]
-        linkedin_profile = linkedin_profile[0] if linkedin_profile else None
-        twitter_profile = [x1 for x1 in all_profiles if TWITTER in x1['cluster']]
-        twitter_profile = twitter_profile[0] if twitter_profile else None
-        meetup_profile = [x1 for x1 in all_profiles if MEETUP in x1['cluster']]
-        meetup_profile = meetup_profile[0] if meetup_profile else None
-        name = linkedin_profile['entity']['firstName']+' '+linkedin_profile['entity']['lastName']        
-        title = linkedin_profile['entity']['title']
-        jobprofilesummary = linkedin_profile['entity']['profilesummary']
-        work_interests = linkedin_profile['entity']['interests']
-        if jobprofilesummary:
-            jobprofilesummary = tornado.escape.xhtml_unescape(jobprofilesummary)
-        currentjob = linkedin_profile['entity']['current']
-        currentjob = currentjob[0] if currentjob else None
-        previous_jobs = linkedin_profile['entity']['previous']
-        education = [linkedin_profile['entity']['education']]
-        region = linkedin_profile['entity']['region']
-        if twitter_profile:
-            interests_and_hobbies = twitter_profile['entity']['profilesummary']
-            if interests_and_hobbies:
-                interests_and_hobbies = tornado.escape.xhtml_unescape(interests_and_hobbies)
-            else:
-                interests_and_hobbies = ""
-            current_tweets = [tornado.escape.xhtml_unescape(x) for x in twitter_profile['entity']['tweets'] if x]
-        else:
-            interests_and_hobbies = ""
-            current_tweets = []
-        if meetup_profile:
-            org_groups = [tornado.escape.xhtml_unescape(x[0]) for x in meetup_profile['entity']['groups'] if x[1] == 'Organizer']
-            memb_groups = [tornado.escape.xhtml_unescape(x[0]) for x in meetup_profile['entity']['groups'] if x[1] == 'Member']
-            currentgroups = org_groups + memb_groups
-        else:
-            currentgroups = []
-        return self.render("static/metaprofile.html",meta_name = name, title = title,jobprofilesummary = jobprofilesummary,
-                                        currentjob = currentjob,previous_jobs = previous_jobs,
-                                        education = education,region = region,work_interests = work_interests,
-                                        interests_and_hobbies = interests_and_hobbies,current_tweets=current_tweets,                                                
-                                        currentgroups = currentgroups)
+        
+        all_profiles =  retrieveProfilesFromCluster(link)
+        meta_prof = MetaProfile(all_profiles) 
+        return self.render("static/metaprofile.html",meta_name = meta_prof.name, title = meta_prof.title,jobprofilesummary = meta_prof.jobprofilesummary,
+                                        currentjob = meta_prof.currentjob,previous_jobs = meta_prof.previous_jobs,
+                                        education = meta_prof.education,region = meta_prof.region,work_interests = meta_prof.work_interests,
+                                        interests_and_hobbies = meta_prof.interests_and_hobbies,current_tweets=meta_prof.current_tweets,                                                
+                                        currentgroups = meta_prof.currentgroups)
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
