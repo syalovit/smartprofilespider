@@ -107,24 +107,22 @@ class RetrieveMetaProfileHandler(BaseHandler):
         previous_jobs = linkedin_profile['entity']['previous']
         education = [linkedin_profile['entity']['education']]
         region = linkedin_profile['entity']['region']
-        meta_profile_workgraph = Counter(result.get(WORKGRAPH)[0])
-#        work_interests = sorted(meta_profile_workgraph,key=meta_profile_workgraph.get,reverse=True)[:10]        
         if twitter_profile:
-             interests_and_hobbies = twitter_profile['entity']['profilesummary']
-             if interests_and_hobbies:
-                 interests_and_hobbies = tornado.escape.xhtml_unescape(interests_and_hobbies)
-             current_tweets = [tornado.escape.xhtml_unescape(x) for x in twitter_profile['entity']['tweets'] if x]
+            interests_and_hobbies = twitter_profile['entity']['profilesummary']
+            if interests_and_hobbies:
+                interests_and_hobbies = tornado.escape.xhtml_unescape(interests_and_hobbies)
+            else:
+                interests_and_hobbies = ""
+            current_tweets = [tornado.escape.xhtml_unescape(x) for x in twitter_profile['entity']['tweets'] if x]
         else:
-            interests_and_hobbies = None
-            current_tweets = None
+            interests_and_hobbies = ""
+            current_tweets = []
         if meetup_profile:
             org_groups = [tornado.escape.xhtml_unescape(x[0]) for x in meetup_profile['entity']['groups'] if x[1] == 'Organizer']
             memb_groups = [tornado.escape.xhtml_unescape(x[0]) for x in meetup_profile['entity']['groups'] if x[1] == 'Member']
             currentgroups = org_groups + memb_groups
         else:
-            org_groups = None
-            memb_groups = None
-            currentgroups = None
+            currentgroups = []
         return self.render("static/metaprofile.html",meta_name = name, title = title,jobprofilesummary = jobprofilesummary,
                                         currentjob = currentjob,previous_jobs = previous_jobs,
                                         education = education,region = region,work_interests = work_interests,
