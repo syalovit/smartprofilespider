@@ -22,7 +22,7 @@
     <td><b>{{ meta_name }}</b></td>
     <td>
     {% for a_link in mixed_graph_ele %} 
-    <br><a href="retrieve_meta_profile?link={{ meta_name }}&interest={{ a_link }}">{{ a_link }}</a>
+    <a href="retrieve_meta_profile?link={{ meta_name }}&interest={{ a_link[0] }}">{{ a_link[0] }}</a>
     {% end %}
     </td>
     

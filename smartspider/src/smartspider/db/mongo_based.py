@@ -58,6 +58,19 @@ def retrieveCluster(source,cluster):
     dbColl = db.raw_profiles    
     return dbColl.find_one({"cluster" : cluster})
 
+def retrieveClusters(source,clusters):
+    db = MongoDBConnection.instance().get_connection().smartspider
+    dbColl = db.raw_profiles    
+    return dbColl.find({ "$or" : [ {"cluster" : x } for x in clusters]})
+
+
+def findCluster(cluster,algo="algo0"):
+    db = MongoDBConnection.instance().get_connection().smartspider
+    dbColl = getattr(db,'cluster_'+algo)
+    return dbColl.find_one({'meta_profile_key' : cluster.replace(' ','_')})
+    
+    
+
 
 def updateSeedIndex(source,namedEntity):
     db = MongoDBConnection.instance().get_connection().smartspider
