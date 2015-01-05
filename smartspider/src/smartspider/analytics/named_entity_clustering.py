@@ -54,7 +54,7 @@ def normalizeSummary(source,ner):
         profilesummary = ner['profilesummary']
     if profilesummary:
         replace_punctuation = string.maketrans(string.punctuation, ' '*len(string.punctuation))
-        profilesummary = profilesummary.translate(replace_punctuation)
+        profilesummary = str(profilesummary).translate(replace_punctuation)
         
         elements = [x.upper() for x in sorted(profilesummary.split(" ")) if x.isalpha() and x not in string.punctuation and x not in stopwords.words('english')]
         ele = [port.stem(x) for x in elements]
