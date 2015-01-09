@@ -88,17 +88,18 @@ def process_twitter_profile(pBuckets):
             logging.getLogger().log(logging.CRITICAL,"failed for %s" % userName)
             logging.getLogger().log(logging.CRITICAL,ex)
 
-def seed_twitter(gate = "COWDEN"):
-    notProcessed = False
-    ignoreProcess = False    
-    NER = readSeedIndex(LINKEDIN)
-    cnt = 0
-    Found = False
-    while (not Found) and cnt <= len(NER):
-        x = NER[cnt]
-        Found = x['firstName'].upper().find(gate)>=0 or x['lastName'].upper().find(gate) >=0
-        cnt = cnt + 1
-    NER = NER[cnt:]
+def seed_twitter(gate = None):
+    NER = readSeedIndex(LINKEDIN, False)
+    if gate is not None:
+        notProcessed = False
+        ignoreProcess = False        
+        cnt = 0
+        Found = False
+        while (not Found) and cnt <= len(NER):
+            x = NER[cnt]
+            Found = x['firstName'].upper().find(gate)>=0 or x['lastName'].upper().find(gate) >=0
+            cnt = cnt + 1
+        NER = NER[cnt:]
     while True:
         create_profiles_idx_from_twitter_search(NER)
         NER = readSeedIndex("linkedin")

@@ -12,7 +12,7 @@ from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
 import operator
 import string
-
+import logging
 def normalizeRegion(source,region):
     firstPass = region.upper().replace("GREATER","").replace("CITY","").replace(" ","")[:4]
     return "NEWY" if region.upper().find("NY") >=0 or region.upper().find("NEW YORK") >= 0 or region.upper().find("NEWYORK") >= 0 else firstPass
@@ -40,27 +40,25 @@ def normalizeInterestWords(source,ner):
     else:
         return []
 
+
+
 def normalizeSummary(source,ner):
     # We use interests from linkedin which is a better match to twitter and meetup
     # we will create a singleton stemmer later
-    from nltk.stem import PorterStemmer
-    from nltk.corpus import stopwords
-    import string
     port = PorterStemmer()
-
-    if source == "linkedin":
-        profilesummary = ner['interests'] or ner['profilesummary']
-    else:
-        profilesummary = ner['profilesummary']
-    if profilesummary:
-        replace_punctuation = string.maketrans(string.punctuation, ' '*len(string.punctuation))
-        profilesummary = profilesummary.translate(replace_punctuation)
-        
-        elements = [x.upper() for x in sorted(profilesummary.split(" ")) if x.isalpha() and x not in string.punctuation and x not in stopwords.words('english')]
-        ele = [port.stem(x) for x in elements]
-        hiScore = [x[0] for x in list(Counter(ele).most_common(10))]        
-        return "_".join(hiScore)
-    else:
+    try:
+        if source == "linkedin":
+            profilesummary = ' '.join(ner.get('interests',[])) + (ner.get('profilesummary','') or '')
+        else:
+            profilesummary = ner['profilesummary']
+        if profilesummary:
+            ele = normalizeWords(profilesummary.split(" "))
+            hiScore = [x[0] for x in list(Counter(ele).most_common(10))]        
+            return "_".join(hiScore)
+        else:
+            return "NONE"
+    except Exception as ex:
+        logging.getLogger().log(logging.CRITICAL,"Failed summarizing %s with error %s" % (ner, ex))
         return "NONE"
 
 def normalizeName(source,name):

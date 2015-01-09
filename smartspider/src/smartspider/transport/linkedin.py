@@ -7,7 +7,7 @@ from BeautifulSoup import BeautifulSoup,NavigableString
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
 from smartspider.db.mongo_based import storeCluster,updateSeedIndex,readSeedIndex
 import mechanize
-from smartspider.db import LINKEDIN
+from smartspider.db import LINKEDIN,LINKEDIN_INPUT
 import gzip
 import StringIO
 import logging
@@ -135,3 +135,15 @@ def clean_read(start_at_link = 'https://www.linkedin.com/in/kursadd'):
             except Exception as ex:
                 print ex
                 continue
+            
+
+def clean_re_read():
+        links = readSeedIndex(LINKEDIN_INPUT,False)
+        logging.getLogger().log(logging.CRITICAL,"number of links from linkedin %s" % len(links))
+        
+        for link in links:
+            try:                
+                process_linkedin_profile(link)
+            except Exception as ex:
+                print ex
+                continue            
