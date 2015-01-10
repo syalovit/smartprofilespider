@@ -70,11 +70,11 @@ def process_twitter_profile(pBuckets):
             y=gzip.GzipFile(fileobj=StringIO.StringIO(buffer(z.get_data())),compresslevel=9)
             raw = y.read()
             parsed = BeautifulSoup(raw)
-            profilesummary = parsed.find("p", {"class" : "ProfileHeaderCard-bio u-dir"},recursive=True).getString()
+            profilesummary = parsed.find("p", {"class" : "ProfileHeaderCard-bio u-dir"},recursive=True).text
             if profilesummary:
                 profilesummary = profilesummary.encode('ascii','ignore').decode('ascii')
             region = parsed.find("span", {"class" : "ProfileHeaderCard-locationText u-dir" }).getString() or "NONE"
-            tweets = [x.getString() for x in parsed.findAll("p" ,{"class" : "ProfileTweet-text js-tweet-text u-dir"})]
+            tweets = [x.text for x in parsed.findAll("p" ,{"class" : "ProfileTweet-text js-tweet-text u-dir"})]
             ner = dict(userName=userName,raw=raw,profilesummary=profilesummary,
                                         region=region,tweets=tweets,lastName=a_profile["fullName"].split(' ')[-1],firstName=" ".join(a_profile["fullName"].split(' ')[:-1]))
             cluster = computeNamedEntityClusterAlgo1(TWITTER,ner)
@@ -134,3 +134,13 @@ def process_twitter_clean(gate = '@ShowdownJoe'):
         else:
             logging.getLogger().log(logging.CRITICAL,"ignoring bucket %s" % aBucket)
 
+
+def re_process_twitter_clean():
+    entities = readSeedIndex(TWITTER_IN,False)
+    logging.getLogger().log(logging.CRITICAL,"starting to process %s profiles " % len(entities))    
+    for aBucket in entities:
+        process_twitter_profile(aBucket)
+
+
+process_twitter_profile({ "userName" : "@mat_hunter",
+    "fullName" : "Mat Hunter"})

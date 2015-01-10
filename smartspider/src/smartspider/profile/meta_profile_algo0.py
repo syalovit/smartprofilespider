@@ -8,13 +8,17 @@ from smartspider.db import LINKEDIN,TWITTER,MEETUP
 from tornado.escape import xhtml_unescape
 class MetaProfile(object):
     
-    def __init__(self, profiles):        
-        linkedin_profile = [x1 for x1 in profiles if LINKEDIN in x1['cluster']]
-        linkedin_profile = linkedin_profile[0] if linkedin_profile else None
-        twitter_profile = [x1 for x1 in profiles if TWITTER in x1['cluster']]
-        twitter_profile = twitter_profile[0] if twitter_profile else None
-        meetup_profile = [x1 for x1 in profiles if MEETUP in x1['cluster']]
-        meetup_profile = meetup_profile[0] if meetup_profile else None
+    def __init__(self, profiles):              
+        linkedin_profile,twitter_profile,meetup_profile = None,None,None  
+        for a_profile in profiles:
+            if linkedin_profile is None:                    
+                linkedin_profile = a_profile if LINKEDIN in a_profile['cluster'] else None
+            if twitter_profile is None: 
+                twitter_profile = a_profile if TWITTER in a_profile['cluster'] else None
+            if meetup_profile is None:
+                meetup_profile = a_profile if MEETUP in a_profile['cluster'] else None          
+            
+        
         self.name = linkedin_profile['entity']['firstName']+' '+linkedin_profile['entity']['lastName']        
         self.title = linkedin_profile['entity']['title']
         self.jobprofilesummary = linkedin_profile['entity']['profilesummary']
@@ -25,7 +29,7 @@ class MetaProfile(object):
         self.currentjob = linkedin_profile['entity']['current']
         self.currentjob = self.currentjob[0] if self.currentjob else None
         self.previous_jobs = linkedin_profile['entity']['previous'] or []
-        self.education = linkedin_profile['entity']['education']
+        self.education = linkedin_profile['entity']['education'] or []
         self.region = linkedin_profile['entity']['region']
         if twitter_profile:
             self.interests_and_hobbies = twitter_profile['entity']['profilesummary']

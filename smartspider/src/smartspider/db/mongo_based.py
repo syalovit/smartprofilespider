@@ -11,7 +11,7 @@ from pymongo.database import Database
 
 
 
-DBNAME = "localhost"
+DBNAME = "184.106.134.138"
 USERNAME = "talneuro"
 PASSWD = "talneuro"
 

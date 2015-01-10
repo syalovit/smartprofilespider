@@ -28,7 +28,7 @@ def create_basic_cluster_algo0():
         profilesummary = cluster_data.get('profilesummary','') or ''               
         if cluster_key.find(LINKEDIN) >= 0:
             region = cluster_data.get('region','') or ''            
-            profile_data = " ".join(cluster_data.get('interests',[]))+ profilesummary + region 
+            profile_data =  profilesummary + region 
             cluster_algo0.update({"meta_profile_key" : key } , {"meta_profile_key" : key , 
                                                                 "features" : profile_data }, upsert = True)
             new_tags = profile_data.split(' ')            

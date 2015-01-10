@@ -21,7 +21,7 @@ BR.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Ge
 BR.set_handle_robots(False)
 
 
-def process_linkedin_profile(a_link):
+def process_linkedin_profile_from_site(a_link):
     # XXX DEAL WITH PARTIAL PROFILES
     logging.getLogger().log(logging.INFO,"processing link %s " % a_link)
     z=BR.open(a_link)
@@ -72,6 +72,58 @@ def process_linkedin_profile(a_link):
     storeCluster(LINKEDIN,cluster,ner)
     updateSeedIndex(LINKEDIN,[dict(firstName=firstName,lastName=lastName)])
 
+def removeNonAscii(s):    
+    return "".join([z for z in s if (ord(z)<128)])
+
+def process_linkedin_profile_from_record(a_record):
+    # XXX DEAL WITH PARTIAL PROFILES
+    logging.getLogger().log(logging.INFO,"processing record %s " % a_record)
+    summary = a_record[4]
+    try:
+        region = a_record[7].replace('"','')
+    except:
+        region = None
+    try:
+        fullName = a_record[2].replace(' | LinkedIn','')
+    except:
+        fullName = None
+    lastName = fullName.split(' ')[-1]
+    firstName = " ".join(fullName.split(' ')[:-1])
+    try:
+        title = a_record[8]
+    except:
+        title = None
+    try:
+        industry = None
+    except:
+        industry = None
+    try:
+        current = None
+    except:
+        current = None
+    try:
+        previous = None
+    except:
+        previous = None
+    try:
+        education = None
+    except:
+        education = None
+    try:
+        profilesummary = summary
+    except:
+        profilesummary = None
+    interests = None
+    ner = dict(raw=a_record,link=a_record[0],region=region,title=title,
+                              industry=industry,current=current,previous=previous,
+                              education=education,profilesummary=profilesummary,interests=interests,
+                              firstName=firstName,lastName=lastName)
+    cluster = computeNamedEntityClusterAlgo1(LINKEDIN,ner)    
+    storeCluster(LINKEDIN,cluster,ner)
+    updateSeedIndex(LINKEDIN,[dict(firstName=firstName,lastName=lastName)])
+
+
+
 def harvest_profiles_from_bing(constraint_based="'new+york+city'+and+'java'",max_links=5000):
     import string
     for s in string.letters:
@@ -107,13 +159,13 @@ def harvest_profiles_from_bing(constraint_based="'new+york+city'+and+'java'",max
                 logging.getLogger().log(logging.CRITICAL,url)
                 
 
-def main():
+def main_from_site():
     while True:
         import time    
         links = readSeedIndex(LINKEDIN_INPUT)
         for link in links:
             try:
-                process_linkedin_profile(link)
+                process_linkedin_profile_from_site(link)
             except Exception as ex:
                 print ex
                 continue
@@ -128,7 +180,7 @@ def clean_read(start_at_link = 'https://www.linkedin.com/in/kursadd'):
             try:                
                 notProcessed = start_at_link == link
                 if notProcessed or ignoreProcessed:
-                    process_linkedin_profile(link)
+                    process_linkedin_profile_from_site(link)
                     ignoreProcessed = True
                 else:
                     logging.getLogger().log(logging.CRITICAL,"ignoring link %s" % link)
@@ -143,7 +195,13 @@ def clean_re_read():
         
         for link in links:
             try:                
-                process_linkedin_profile(link)
+                process_linkedin_profile_from_site(link)
             except Exception as ex:
                 print ex
                 continue            
+
+def process_google_api_profiles():
+    f = open(r'C:\Users\ruslana\git\smartprofilespider\smartspider\data\linkedin.csv')
+    for a_record in f:
+        elements = removeNonAscii(a_record).split('\t')
+        process_linkedin_profile_from_record(elements)

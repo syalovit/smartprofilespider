@@ -41,24 +41,21 @@ def normalizeInterestWords(source,ner):
         return []
 
 
-
 def normalizeSummary(source,ner):
     # We use interests from linkedin which is a better match to twitter and meetup
     # we will create a singleton stemmer later
     port = PorterStemmer()
+
     try:
-        if source == "linkedin":
-            profilesummary = ' '.join(ner.get('interests',[])) + (ner.get('profilesummary','') or '')
-        else:
-            profilesummary = ner['profilesummary']
-        if profilesummary:
-            ele = normalizeWords(profilesummary.split(" "))
+        if ner['profilesummary']:
+            ele = normalizeWords(ner['profilesummary'].split(" "))
             hiScore = [x[0] for x in list(Counter(ele).most_common(10))]        
             return "_".join(hiScore)
         else:
             return "NONE"
     except Exception as ex:
         logging.getLogger().log(logging.CRITICAL,"Failed summarizing %s with error %s" % (ner, ex))
+
         return "NONE"
 
 def normalizeName(source,name):

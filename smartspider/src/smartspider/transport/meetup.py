@@ -146,7 +146,7 @@ def create_profiles_idx_from_meetup_search(namedEntityRecord):
 def main():
     while True:
         import time
-        NER = readSeedIndex(LINKEDIN)
+        NER = readSeedIndex(LINKEDIN,False)
         for a_ner in NER:
             create_profiles_idx_from_meetup_search(a_ner)
         

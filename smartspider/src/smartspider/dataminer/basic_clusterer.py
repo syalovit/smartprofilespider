@@ -1,4 +1,4 @@
-from smartspider.db.mongo_based import  read_basic_cluster,create_basic_cluster_algo0
+from smartspider.analytics.clustering_algo import  read_basic_cluster,create_basic_cluster_algo0
 
 def main():
     import pprint

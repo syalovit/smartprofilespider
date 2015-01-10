@@ -65,8 +65,10 @@ class retrieveClusterHandler(BaseHandler):
         link = self.get_argument("link")
         namedEntityReco = retrieveCluster("NONE",link)
         ner = namedEntityReco["entity"]
-        if 'raw' in ner:
-            self.write(ner['raw'])
+        if 'raw' in ner and 'linkedin' not in link:
+            self.write(ner['raw'])        
+        elif 'linkedin' in link:
+            return self.redirect(ner['link'])
         else:
             return self.render("static/ner.html",NER=ner['profilesummary'])
 
@@ -80,8 +82,8 @@ class RetrieveMetaProfileHandler(BaseHandler):
         all_profiles =  retrieveProfilesFromCluster(link)
         meta_prof = MetaProfile(all_profiles) 
         return self.render("static/metaprofile.html",meta_name = meta_prof.name, title = meta_prof.title,jobprofilesummary = meta_prof.jobprofilesummary,
-                                        currentjob = meta_prof.currentjob,previous_jobs = meta_prof.previous_jobs,
-                                        education = meta_prof.education,region = meta_prof.region,work_interests = meta_prof.work_interests,
+                                        currentjob = meta_prof.currentjob,previous_jobs = meta_prof.previous_jobs or [],
+                                        education = meta_prof.education,region = meta_prof.region,work_interests = meta_prof.work_interests or [],
                                         interests_and_hobbies = meta_prof.interests_and_hobbies,current_tweets=meta_prof.current_tweets,                                                
                                         currentgroups = meta_prof.currentgroups)
 
