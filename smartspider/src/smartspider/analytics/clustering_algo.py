@@ -1,7 +1,7 @@
 '''
 Created on Jan 4, 2015
 
-@author: ruslana
+@author: deductive systems
 '''
 from smartspider.db.mongo_based import MongoDBConnection
 from smartspider.analytics.named_entity_clustering import normalizeWords,normalizeInterestWords,classifyProfile
@@ -72,7 +72,7 @@ def read_basic_cluster():
     return bucketMap,bucketProfileMap,bucketStats
 #
 #def read_cluster_skills_algo1():
-#    entries = [x for x in os.listdir("c:\\users\\eloise\\spider\\") if x.find("_index") == -1]
+#    entries = [x for x in os.listdir("c:\\users\\deductive systems\\spider\\") if x.find("_index") == -1]
 #    nameElements = [" ".join(x.split("_")[:2]) for x in entries]
 #    summaryElements = [x.split("_")[2:-1] for x in entries]
 #    allFeatures = np.array(sorted(set(sum(summaryElements,[]))))

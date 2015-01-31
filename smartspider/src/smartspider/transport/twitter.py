@@ -1,7 +1,7 @@
 '''
 Created on Dec 19, 2014
 
-@author: Eloise
+@author: deductive systems
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
 import logging,mechanize

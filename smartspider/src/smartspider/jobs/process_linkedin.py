@@ -1,7 +1,7 @@
 '''
 Created on Dec 26, 2014
 
-@author: Eloise
+@author: deductive systems
 '''
 
 from smartspider.transport.linkedin import process_google_api_profiles as process_linkedin

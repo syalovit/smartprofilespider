@@ -1,7 +1,7 @@
 '''
 Created on Jan 4, 2015
 
-@author: Eloise
+@author: deductive systems
 '''
 
 from smartspider.db import LINKEDIN,TWITTER,MEETUP

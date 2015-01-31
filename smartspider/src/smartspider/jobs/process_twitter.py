@@ -1,7 +1,7 @@
 '''
 Created on Dec 26, 2014
 
-@author: Eloise
+@author: deductive systems
 '''
 
 from smartspider.transport.twitter import re_process_twitter_clean as process_twitter

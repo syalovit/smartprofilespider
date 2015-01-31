@@ -1,7 +1,7 @@
 '''
 Created on Dec 19, 2014
 
-@author: Eloise
+@author: deductive systems
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
 from smartspider.analytics.named_entity_clustering import computeNamedEntityClusterAlgo1
@@ -201,7 +201,7 @@ def clean_re_read():
                 continue            
 
 def process_google_api_profiles():
-    f = open(r'C:\Users\ruslana\git\smartprofilespider\smartspider\data\linkedin.csv')
+    f = open(r'C:\Users\deductive systems\git\smartprofilespider\smartspider\data\linkedin.csv')
     for a_record in f:
         elements = removeNonAscii(a_record).split('\t')
         process_linkedin_profile_from_record(elements)

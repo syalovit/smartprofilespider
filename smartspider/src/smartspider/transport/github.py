@@ -1,19 +1,19 @@
 '''
 Created on Dec 19, 2014
 
-@author: Eloise
+@author: deductive systems
 '''
 https://www.google.com/?gws_rd=ssl#q=github+user+frank+greco
 '''
 Created on Dec 19, 2014
 
-@author: Eloise
+@author: deductive systems
 '''
 
 '''
 Created on Dec 19, 2014
 
-@author: Eloise
+@author: deductive systems
 '''
 from BeautifulSoup import BeautifulSoup,NavigableString
 import mechanize

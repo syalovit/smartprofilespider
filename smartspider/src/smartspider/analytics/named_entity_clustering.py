@@ -1,7 +1,7 @@
 '''
 Created on Dec 21, 2014
 
-@author: Eloise
+@author: deductive systems
 '''
 
 WORKGRAPH = "workgraph"
